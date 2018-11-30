@@ -14,7 +14,7 @@
 \usepackage[dvipsnames]{xcolor}   % for \textcolor
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
-\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+%\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
 %\usepackage[english]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
@@ -88,6 +88,31 @@
     {numbers=none}
 }{}
 
+\lstdefinelanguage{pseudocode}{
+    alsodigit = {-},
+    keywords = {algorithm,new,if,else,while,for,foreach,to,in,return,true,false,and,or,not,error}
+}
+
+
+\lstnewenvironment{pseudo}[1][]{
+    \lstset{
+        language=pseudocode,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0},
+        keywordstyle=\bfseries,
+        stringstyle=\color{red}\ttfamily,
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
 \makeatother
@@ -130,17 +155,18 @@ $C$ is the subset of $X$ that contains the centers. The algorithm is the followi
 
 In pseudocode:
 
-\begin{verbatim}
-algorithm k_centers(G, k):
-    C := []
+\begin{pseudo}
+algorithm k_centers(G, k)
+    C := new List()
     c := random_select(G.nodes)
     G.nodes.pop(c)
     C.add(c)
-    distances := [+inf]*G.nodes.size()
+    distances := new Array(G.nodes.size())
+    distances.fill(+inf)
     while C.size() < k
         new_c := none
         max_dist := -inf
-        for x in G.nodes
+        foreach x in G.nodes
             d := min(distances[x], G.edge(c, x).weigth)
             if max_dist < d
                 max_dist = d
@@ -149,7 +175,8 @@ algorithm k_centers(G, k):
         G.nodes.pop(c)
         C.add(c)
     return C
-\end{verbatim}
+\end{pseudo}
+
 
 The \verb|distances| list is an optimization used to avoid to compute the distance between a node $x \in X$ and all centers in all of the iterations. \verb|distances| keeps track of the distance each node from its nearest center. Each iteration only a center $c_i$ is added, so the distance from the nearest center can remain the same or be updated to $d(x, c_i)$.
 
@@ -349,9 +376,9 @@ Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of th
 This can be traduced into an algorithm that explores all the possible configurations and so a brute-force. In order to gain a polynomial cost, we used the memorization of the results of $OPT(x, h)$.
 We can store the solutions in a matrix $M_{T+1,2}$ storing in the first column the values of $OPT(x, false)$ and in the second $OPT(x, true)$. Obviously the rows are related to the $x$, so encoding $false = 0$ and $true = 1$ we can get the return value of $OPT(x, h)$ with $\big(\big(M\big)_x\big)_h$. Note that the last row of $M$ is present in order to avoid to check if we are in the case $t = T-1$.
 
-The algorithm is the following:
+The algorithm, \verb|min_cost|, is the following:
 
-\begin{verbatim}
+\begin{pseudo}
 algorithm min_cost_aux(t, T, s, C, S, c, h, M)
     if t = T
         return 0
@@ -363,14 +390,15 @@ algorithm min_cost_aux(t, T, s, C, S, c, h, M)
         return min(s + M[t+1][1], S + c[t] + M[t+1][0])
     else if h = 0
         return min(C + s + M[t+1][1], c[t] + M[t+1][0])
-
+\end{pseudo}
+\begin{pseudo}
 algorithm min_cost(j, T, s, C, S, c)
     M := new Matrix(T+1, 2) 
     for t = 0 to T
         if j[t] = false
             c[t] = 0
     return min_cost_aux(0, T, s, C, S, c, 0, M)
-\end{verbatim}
+\end{pseudo}
 
 In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
 
@@ -400,7 +428,7 @@ So we set ${c^j}_t = 0$ when $j \notin W_t$.
 With this consideration, we can formulate the problem as derived from 4.1.
 In fact, for each type of worker $w \in W$, we can just run the 4.1 algorithm and sum all the minimum cost.
 
-\begin{verbatim}
+\begin{pseudo}
 algorithm min_cost_multi_types(W, Wt, T, s, C, S, c)
     res := 0
     for t = 0 to T
@@ -411,7 +439,7 @@ algorithm min_cost_multi_types(W, Wt, T, s, C, S, c)
         M := new Matrix(T+1, 2)
         res = res + min_cost_aux(0, T, s, C, S, c[w], 0, M)
     return res
-\end{verbatim}
+\end{pseudo}
 
 The cost of the foreach loop inside the for is $k$, the cardinality of $|W|$.
 The outer for has $T$ iterations, so the total cost is $O(T*k)$.
@@ -458,24 +486,25 @@ In the other case, when $v$ and $u$ are not connected with edges with weight les
 We choose $S$ as all nodes that can be reached by $v$ in $G'$ so that cannot exists an edge with weight less than $w$ and one endpoint in $S$ and the other in $V' \setminus S$. If such edge exists, the endpoint in $V' \setminus S$ is reachable from $v$ so it is a contradiction.
 This implies that $e$ is the edge with minimum cost with an endpoint in $S$ and the other in $V' \setminus S$, so $e$ belongs to all MSTs.
 
-We designed an algorithm based on DFS in order to verify if exists a path formed by edges with weight less than $w$ that connects $v$ to $u$:
+We designed an algorithm, \verb|edge_is_in_mst|, based on DFS in order to verify if exists a path formed by edges with weight less than $w$ that connects $v$ to $u$:
 
-\begin{verbatim}
+\begin{pseudo}
 algorithm edge_is_in_mst_aux(G, e, v)
     a := true
     v.visited = true
     foreach i in G.neighbors(v)
         if G.edge(v, i).weight >= e.weight
             skip
-        if i is e.u:
+        if i = e.u
             return false
         if not i.visited
             a = a and edge_is_in_mst_aux(G, e, i)
     return a
-
+\end{pseudo}
+\begin{pseudo}
 algorithm edge_is_in_mst(G, e)
-    return edge_is_in_mst_aux(e.v)
-\end{verbatim}
+    return edge_is_in_mst_aux(G, e, e.v)
+\end{pseudo}
 
 Checking the weight of adjacent edges does not add cost to the DFS since is a $O(1)$ operation. Also stopping the algorithm when \verb|e.u| is encountered does not add any cost, so the final cost of \verb|edge_is_in_mst| is the cost of a DFS, $O(|V|+|E|)$.
 
@@ -496,11 +525,11 @@ Our algorithm is the following:
 
 In pseudocode:
 
-\begin{verbatim}
+\begin{pseudo}
 algorithm mst_from_edge(G, e)
     if not edge_is_in_mst(G, e)
         error()
-    mst := []
+    mst := new List()
     foreach v in G.nodes
         make_set(v)
     ordered := sort_by_increasing_weigth(G.edges)
@@ -511,7 +540,7 @@ algorithm mst_from_edge(G, e)
             mst.add(o)
             union(o.v, o.u)
     return mst
-\end{verbatim}
+\end{pseudo}
 
 The action 1 costs $O(|V|+|E|)$ as described before.
 The action 2, the sorting, costs $O(|E|log|E|)$.
