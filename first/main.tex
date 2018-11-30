@@ -1,0 +1,707 @@
+% !TeX encoding = UTF-8
+% !TeX program = pdflatex
+
+%----------------------------------------------------------------------------------------
+%    PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}   % for \textcolor
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+%\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\lstnewenvironment{pycode}[1][]{
+    \lstset{
+        language=python,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={self,as},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\lstnewenvironment{ccode}[1][]{
+    \lstset{
+        language=C,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+
+%----------------------------------------------------------------------------------------
+%    TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{    
+\normalfont \normalsize 
+\textsc{Sapienza University of Rome} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Algorithm Design First Homework \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Andrea Fioraldi 1692419} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section*{Exercise 1}
+
+This problem can be viewed as a simplification of the K-center clustering problem. This problem has an approximate solution, a greedy 2-approximation algorithm. We used this simplification and we also proved that this approach is optimal for our problem.
+
+$C$ is the subset of $X$ that contains the centers. The algorithm is the following:
+
+\begin{enumerate}
+    \item Pick an arbitrary point $c_1$ and insert in into $C$;
+    \item Pick the point $x$ with the highest distance from the nearest center $c_i$;
+    \item Insert $x$ into $C$;
+    \item Continue from 1 until $|C| < k$;
+\end{enumerate}
+
+In pseudocode:
+
+\begin{verbatim}
+algorithm k_centers(G, k):
+    C := []
+    c := random_select(G.nodes)
+    G.nodes.pop(c)
+    C.add(c)
+    distances := [+inf]*G.nodes.size()
+    while C.size() < k
+        new_c := none
+        max_dist := -inf
+        for x in G.nodes
+            d := min(distances[x], G.edge(c, x).weigth)
+            if max_dist < d
+                max_dist = d
+                new_c = c
+        c = new_c
+        G.nodes.pop(c)
+        C.add(c)
+    return C
+\end{verbatim}
+
+The \verb|distances| list is an optimization used to avoid to compute the distance between a node $x \in X$ and all centers in all of the iterations. \verb|distances| keeps track of the distance each node from its nearest center. Each iteration only a center $c_i$ is added, so the distance from the nearest center can remain the same or be updated to $d(x, c_i)$.
+
+So this approximation cost is $O(n*k)$ because in each iteration all nodes are processed and there are $k$ iterations. 
+
+To compute the permutation requested by the exercise we run the algorithm with $k = n$, where $n = |X|$.
+This is possible thanks to the fact that in this greedy algorithm the iteration $i$ is not dependent from the presence of an iteration $i+1$ so computing $k\_center(G, k)$ is equivalent to $slice(k\_center(G, n), 1, k)$ (compute using $k=n$ and after take only the first $k$ elements of the output).
+
+This greedy algorithm is optimal for our problem thanks to the fact that the distances can be only 0, 1 or 3.
+
+For the K-center this algorithm is a 2-approximation, so the approximated minimized maximum of the distances of each point in $X$ to the closest center is at most the twice of the optimal one.
+We will notate the approximated with $r_A$ and the optimal with $r_O$.
+
+Regards our problem both $r_A$ and $r_O$ can be 0 only if $|C| = |X|$, so in this case they are equal.
+There are other 4 cases to consider:
+
+\begin{itemize}
+    \item $r_A = 1 \land r_O = 3$ is not possible because an approximation cannot perform better than the optimal algorithm \footnote{A p-approximation $f$, as described in \cite{app}, perform $OPT$ $\leq f \leq$ $p*OPT$}.
+    \item $r_A = 3 \land r_O = 1$ is not possible because $r_A > 2*r_O$;
+    \item $r_A = 3 \land r_O = 3$ is optimal;
+    \item $r_A = 1 \land r_O = 1$ is optimal;
+\end{itemize}
+
+Follows that in our problem $r_A$ must be equal to $r_O$, so our algorithm is optimal and not an approximation.
+
+
+
+\newpage
+\section*{Exercise 2}
+
+The problem can be represented with a bipartite graph $G(L \cup R, E)$.
+The nodes of the class $L$ represents the avenues and the nodes of the class $R$ the streets.
+The edges in $E$ are the checkpoints.
+Using a reversed perspective, the adjacency matrix of such graph is the grid of avenues and streets with the edges represented by checkpoints.
+
+A vertex cover of such graph (the set of nodes so that each edge has at least one endpoint in the set) represents a set of streets and avenues that can cover all checkpoints.
+A minimum vertex cover is the set of streets and avenues that solves our problem.
+
+Generally, a minimum vertex cover is a hard problem but with bipartite graphs, we can solve it in polynomial time thanks to the Kőnig's theorem.
+
+According to \cite{konig_wiki}, the statement is the following:
+
+\bigskip
+\textit{In any bipartite graph, the number of edges in a maximum matching equals the number of vertices in a minimum vertex cover.}
+\bigskip
+
+Its proof offers a method to retrieve the minimum vertex cover from the maximum bipartite matching.
+
+Adding a source node $s$ to one side and a sink node $t$ to the other we create a flow network based on the bipartite graph:
+
+$G'(L \cup R \cup \{s, t\}, c, s, t)$
+
+All edges capacities are $0$ except the following:
+
+\begin{itemize}
+    \item $c(s, l) = 1$  $ \forall l \in L$;
+    \item $c(r, t) = 1$  $ \forall r \in R$;
+    \item $c(e) = \infty$  $ \forall e \in E$;
+\end{itemize}
+
+The amount of flow for each edge can be 0 or 1.
+For each flow the subset of $E$ with $f(e) = 1$ is a matching of cardinality equal to the value of the flow.
+So a maxflow value is equal to the cardinality of a maximum matching $M$.
+Let $(S, T)$ the mincut associated with the computed maxflow using Ford-Fulkerson.
+
+Consider the set $C = (L \cap T) \cup (R \cap S)$. We want to prove that $C$ is a vertex cover and $|C| = |M|$.
+
+Firstly, $C$ is a vertex cover because taking an edge $e \in E$ with endpoint in $L \cap S$ and $R \cap T$ it would have a capacity $c(e) = \infty$ and this is an absurd because it must be 0 or 1, so all edges have endpoint in $(L \cap T) \cup (R \cap S) = C$.
+
+Secondly, we have that:
+\begin{itemize}
+\item thanks to the maxflow mincut theorem the cardinality of $M$ is equal to the capacity of $(S, T)$;
+\item the capacity of $(S, T)$ is equal to the number of edges in the cutset that is composed only by edges from $s$ to $T$ and from $S$ to $t$ (otherwise they would have an infinite capacity);
+\item such edges are associted to $(L \cap T)$ and $(R \cap S)$, so $|M| = cap(S, T) = |(L \cap T)| + |(R \cap S)| = |C|$.
+\end{itemize}
+
+So a minimum vertex cover can be computed using the Ford-Fulkerson method and is $(L \cap T) \cup (R \cap S)$.
+
+Our solution makes use of a variant of Ford-Fulkerson that guarantee termination, the Edmonds-Karp algorithm, which has cost $O(V E^2)$.
+
+
+
+\newpage
+\section*{Exercise 3}
+
+We represents our problem using a undirected unweigthed graph. Each node of the graph is a friend and an edge $(v,u)$ is presnt if $w(v,u) = 1$.
+The goal is to find the subset of nodes $I$ that maximize $\frac{1}{|I|} \Sigma_{x,y \in I} w(x, y)$ respecting the constraint $|I \cap M| = |I \cap F|$.
+In other words, it is the densest subgraph that has an equal number of M and F nodes.
+
+\subsection*{Certifier}
+
+In order to verify an input $s$ we create an efficent certifier $CERT(s, t)$:
+
+\begin{itemize}
+    \item if $s \cap M \neq s \cap F$ return no;
+    \item let $d_s = \frac{1}{|s|} \Sigma_{x,y \in s} w(x, y)$;
+    \item let $d_t = \frac{1}{|t|} \Sigma_{x,y \in t} w(x, y)$;
+    \item return yes if $d_s \geq d_t$ else return no;
+\end{itemize}
+
+$CERT$ runs in polynomial time, precisely $O(|s|+|t|)$. This certifer can be used in a brute-force over all possibles set of friends $t$ with $|t| \leq |s|$. If all attempts returs yes, $s$ is the solution.
+
+\subsection*{Reduction}
+
+Given our problem $X$ and the clique decision problem $Y$, we will prove that $Y \leq_p X$.
+The clique decision problem takes as input an undirected unweighted graph $G(V, E)$ and a number $k$ and says yes if the graph contains a clique of $k$ nodes and it is NP-complete.
+
+Firstly, we show that the problem $Z$ of finding the subset of nodes $I$ so that $\frac{1}{|I|} \Sigma_{x,y \in I} w(x, y) = q$ and $|I \cap M| = |I \cap F|$, where $q$ is an integer given as input, is equivalent to $X$.
+$X$ can be formulated with $log(n)$ calls to $Z$ using a binary search. So if $Z$ is NP-complete then $X$ is NP-complete.
+
+Now we must prove that $Y \leq_p Z$.
+
+To transform an input for $Y$ to an input for $Z$ we create a graph $G'(M, F, E')$ copying the nodes of graph $G$ into $M$ and the edges into $E'$. Then we create $k$ nodes in $F$ and we connect them in a clique adding edges to $E'$.
+
+In order to transform an instance of $Y$ to $Z$ we set $q = \frac{K-1}{2}$. 
+$\frac{K-1}{2}$ is the maximum density that $G'$ can have and implies that $Z_{ALG}$ must return two cliques of size $k$, one composed by $M$-nodes and the other composed by $F$-nodes \Big(note that $\frac{ K(K-1)/2 + K(K-1)/2 }{|2*K|} = \frac{K-1}{2} = q$\Big).
+
+We prove that $Z_{ALG}$ cannot return a different configuration.
+
+Assume that exists a clique of size $k$ composed by $M$-nodes and that $Z_{ALG}$ returns an output with less $M$-nodes than $k$ or with $k$ $M$-nodes but that is not a clique.
+This is not possible because the densest graph of $k$ nodes is a clique by definition and a clique of $k$ nodes is denser than every clique with fewer nodes (the density of a clique $\frac{x(x-1)/2}{x}$ is a monotonous growing succession). %So the algorithm will consider the maximum clique of $F$-nodes and the clique of $M$ nodes.
+
+Assume that exists a clique of size $k$ composed by nodes of $M$ and that $Z_{ALG}$ returns an output with more $M$-nodes than $k$.
+This is not possible because we have at most $k$ $F$-nodes and so it violates $|I \cap M| = |I \cap F|$.
+
+So $Z_{ALG}$, our black box solver, can solve an instance of $Y$ if the $M$-nodes in the output forms a clique of size $k$.
+
+We proved that $Z$ is NP-complete, and so also $X$, our problem, is NP-complete.
+
+
+
+\newpage
+\section*{Exercise 4}
+
+The related code is in the Appendix.
+
+\subsection*{Part 1}
+
+Assumptions:
+\begin{itemize}
+    \item at the beginning we do not have a hired worker;
+    \item at the end if we have and hired worker we do not have to outsource him;
+\end{itemize}
+
+We never use a freelance when we have a hired worker because we must pay a hired worker also when not working, so if we have a hired worker is always convenient to use him.
+
+We denote as $OPT(x, h)$ the minimum cost of execution of the task $j_t$ with $t \in \{x,...,T\}$ and with $h = true$ when we have a hired worker at disposition.
+So the solution that we are looking for is $OPT(0, false)$.
+
+The cost of a single job can be explained using two cases:
+
+When $h = true$ we must take one of this two subcases, the one with the minimum cost:
+\begin{itemize}
+    \item We use the hired worker that we have to pay him $s$ for the job $j_t$;
+    \item We outsource him paying $S$ and then we use a freelance paying the cost $c_t$ for the job $j_t$;
+\end{itemize}
+On the contrary, with $h = false$, we must consider the subcase of the minimum cost from the following two:
+\begin{itemize}
+    \item We assume an hired work paying $C$ and then we pay $s$ for the job $j_t$;
+    \item We use again a freelance paying the cost $c_t$ for the job $j_t$;
+\end{itemize}
+
+We have to not consider the case in which there is not a job at the time instance $t$ and instead we can simply set the cost $c_t$ of a freelance to $0$ in that case.
+To prove this claim assume that we do not have a job $j_t$ at the instant $t$ and we have a hired worker.
+In this case, we must choose one of the following possibilities:
+\begin{itemize}
+    \item Outsource the hired worker and wait until the next job;
+    \item Pay him to do nothing;
+\end{itemize}
+Otherwise, when we do not have a hired worker we do nothing.
+
+Now if we consider a freelance with cost $0$ we can express the cost of the "not job" as follows:
+
+When $h = true$ we must take one of this two subcases, the one with the minimum cost:
+\begin{itemize}
+    \item We use the hired worker that we have to pay him $s$ for the "not job" $j_t$;
+    \item We outsource him paying $S$ and then we use a freelance paying 0 for the job $j_t$;
+\end{itemize}
+On the contrary, with $h = false$, we must consider the subcase of the minimum cost from the following two:
+\begin{itemize}
+    \item We assume a hired work paying $C$ and then we pay $s$ for the job $j_t$ (of course this can never be the minimum);
+    \item We use again a freelance paying the cost 0 for the job $j_t$ (this is the always chosen option);
+\end{itemize}
+
+So considering a "not job" is equivalent of the previously described situation and we do not have to distinguish the cases in our algorithm, we just set $c_t = 0$ when there is not a job $j_t$.
+
+Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of the successive jobs until the time instant $T$, so we explore all the possible following cases:
+
+\[
+    OPT(x, h) = 
+    \begin{cases}
+        min(s + OPT(x+1, true), S + c_t + OPT(x+1, false)) & \text{if } h = true \\
+        min(C + s + OPT(x+1, true), c_t + OPT(x+1, false)) & \text{if } h = false
+    \end{cases}
+\]
+
+This can be traduced into an algorithm that explores all the possible configurations and so a brute-force. In order to gain a polynomial cost, we used the memorization of the results of $OPT(x, h)$.
+We can store the solutions in a matrix $M_{T+1,2}$ storing in the first column the values of $OPT(x, false)$ and in the second $OPT(x, true)$. Obviously the rows are related to the $x$, so encoding $false = 0$ and $true = 1$ we can get the return value of $OPT(x, h)$ with $\big(\big(M\big)_x\big)_h$. Note that the last row of $M$ is present in order to avoid to check if we are in the case $t = T-1$.
+
+The algorithm is the following:
+
+\begin{verbatim}
+algorithm min_cost_aux(t, T, s, C, S, c, h, M)
+    if t = T
+        return 0
+    if M[t+1][1] = empty
+         M[t+1][1] = min_cost_aux(t+1, T, s, C, S, c, 1, M)
+    if M[t+1][0] = empty
+         M[t+1][0] = min_cost_aux(t+1, T, s, C, S, c, 0, M)
+    if h = 1
+        return min(s + M[t+1][1], S + c[t] + M[t+1][0])
+    else if h = 0
+        return min(C + s + M[t+1][1], c[t] + M[t+1][0])
+
+algorithm min_cost(j, T, s, C, S, c)
+    M := new Matrix(T+1, 2) 
+    for t = 0 to T
+        if j[t] = false
+            c[t] = 0
+    return min_cost_aux(0, T, s, C, S, c, 0, M)
+\end{verbatim}
+
+In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
+
+Every time the procedure invokes the recurrence it fills two entries of the matrix. An entry cannot be filled more than one time. The entries in $M$ are $2*T+2$ and so the algorithm perform at most $2*T+2$ recursions and so the cost is linear, $O(T)$.
+
+The proof of correctness is the following:
+
+In the base case $t = T-1$, we consider two options in order to choose the best worker:
+\begin{itemize}
+    \item $h = true$: the minimum cost is $min(s, S + c_t)$;
+    \item $h = false$: the minimum cost is $min(C + s, c_t)$;
+\end{itemize}
+
+Now assume that \verb|min_cost| returns the minimum for $t+1$ when using a hired worker, $X$, and the minimum cost for $t+1$ when using a freelance, $Y$.
+
+For the case $t$ we consider two options:
+\begin{itemize}
+    \item $h = true$: the minimum cost is $min(s + X, S + c_t + Y)$;
+    \item $h = false$: the minimum cost is $min(C + s + X, c_t + Y)$;
+\end{itemize}
+
+\subsection*{Part 2}
+
+We can covert the works $j_t$ with $W_t \subset W$ to $W_t = W$ using the same consideration for the "no job" of the previous part.
+So we set ${c^j}_t = 0$ when $j \notin W_t$.
+
+With this consideration, we can formulate the problem as derived from 4.1.
+In fact, for each type of worker $w \in W$, we can just run the 4.1 algorithm and sum all the minimum cost.
+
+\begin{verbatim}
+algorithm min_cost_multi_types(W, Wt, T, s, C, S, c)
+    res := 0
+    for t = 0 to T
+        foreach w in W
+            if w not in Wt[t]
+                c[w][t] = 0
+    foreach w in W
+        M := new Matrix(T+1, 2)
+        res = res + min_cost_aux(0, T, s, C, S, c[w], 0, M)
+    return res
+\end{verbatim}
+
+The cost of the foreach loop inside the for is $k$, the cardinality of $|W|$.
+The outer for has $T$ iterations, so the total cost is $O(T*k)$.
+The cost of \verb|min_cost_aux| os $O(T)$ and it is inside a foreach loop of $k$ iterations, so the cost of this second loop is $O(k*T)$.
+This implies that the total cost of \verb|min_cost_multi_types| is $O(T*k) = O(|Wt|*|W|)$, so it is polynomial in function of the size of the two arrays in the input.
+Considering the number $L = 2^k$ we can express the cost as $O(log_2(L)*T)$.
+
+To prove that the algorithm is correct we proceed by induction.
+
+Base case is $k=1$: In that case \verb|min_cost_multi_types| is exactly \verb|min_cost|, so it is correct.
+Assume now that it is correct for the case $k = i$.
+In the case with $k = i+1$ we can see that we are adding a new type of worker to $W$.
+The types of workers are independent of each other, and adding the result of \verb|min_cost| using the type of worker $i+1$ to the total cost computed in the case $k=i$ we get the minimum cost.
+
+
+
+\newpage
+\section*{Exercise 5}
+
+The related code is in the Appendix.
+
+\subsection*{Part 1}
+
+Given a weighted graph $G(V, E)$, to decide if exists an MST containing an edge $e \in E$ we can exploit two properties.
+
+The cycle property \cite{cicle_prop}:
+
+\bigskip
+{\em For any cycle C in the graph, if the weight of an edge e of C is larger than the individual weights of all other edges of C, then this edge cannot belong to an MST.} 
+\bigskip
+
+The cut property \cite{cut_prop}:
+
+\bigskip
+{\em For any cut C of the graph, if the weight of an edge e in the cut-set of C is strictly smaller than the weights of all other edges of the cut-set of C, then this edge belongs to all MSTs of the graph.} 
+\bigskip
+
+Without loss of generality, we can also assume that all weights in the graph are distinct because we can always differentiate two equal weighted edges adding a small constant $c$ to one of the weights without changing the result of the Kruskal algorithm.
+
+The idea is to determinate if starting from one endpoint of $e$ ($v$) we can reach the other ($u$) considering only the edges with weights lower than the weight of $e$ ($w$).
+We call the graph with only these edges $G'(V', E')$.
+If that happens, we have a connected component that contains both $v$ and $u$ and so adding $e$ to such subgraph we obtain a cycle in which $e$ is the edge with the maximum weight. This violates the cycle property, so $e$ does not belong to any MST.
+In the other case, when $v$ and $u$ are not connected with edges with weight less than $w$, if exists a set $S$ for which $v \in S \land u \in V' \setminus S$ the cut property implies that $e$ is in all MSTs.
+We choose $S$ as all nodes that can be reached by $v$ in $G'$ so that cannot exists an edge with weight less than $w$ and one endpoint in $S$ and the other in $V' \setminus S$. If such edge exists, the endpoint in $V' \setminus S$ is reachable from $v$ so it is a contradiction.
+This implies that $e$ is the edge with minimum cost with an endpoint in $S$ and the other in $V' \setminus S$, so $e$ belongs to all MSTs.
+
+We designed an algorithm based on DFS in order to verify if exists a path formed by edges with weight less than $w$ that connects $v$ to $u$:
+
+\begin{verbatim}
+algorithm edge_is_in_mst_aux(G, e, v)
+    a := true
+    v.visited = true
+    foreach i in G.neighbors(v)
+        if G.edge(v, i).weight >= e.weight
+            skip
+        if i is e.u:
+            return false
+        if not i.visited
+            a = a and edge_is_in_mst_aux(G, e, i)
+    return a
+
+algorithm edge_is_in_mst(G, e)
+    return edge_is_in_mst_aux(e.v)
+\end{verbatim}
+
+Checking the weight of adjacent edges does not add cost to the DFS since is a $O(1)$ operation. Also stopping the algorithm when \verb|e.u| is encountered does not add any cost, so the final cost of \verb|edge_is_in_mst| is the cost of a DFS, $O(|V|+|E|)$.
+
+\subsection*{Part 2}
+
+Given a weighted graph $G(V, E)$, to compute an MST that contains a determinate edge $e$ we designed an algorithm based on Kruskal with a sorted list as a source of edges.
+This Kruskal version has a cost of $O(|E|log|E|)$ because it uses a sorting algorithm based on comparison \footnote{In the implementation we used the standard python sort function that is based on Timsort \cite{timsort}}. The action of removing the edges with the minimum weight is done in constant time.
+
+Our algorithm is the following:
+
+\begin{enumerate}
+    \item check if $e$ can be in a MST using \verb|edge_is_in_mst|, if not exit with an error;
+    \item sort the edges using the weights and store them in a list $l$;
+    \item extract the edge $e$ from $l$;
+    \item add $e$ to the MST;
+    \item continue with the itarations of Kruskal using $l$ as source of edges;
+\end{enumerate}
+
+In pseudocode:
+
+\begin{verbatim}
+algorithm mst_from_edge(G, e)
+    if not edge_is_in_mst(G, e)
+        error()
+    mst := []
+    foreach v in G.nodes
+        make_set(v)
+    ordered := sort_by_increasing_weigth(G.edges)
+    ordered.pop(e)
+    mst.add(e)
+    foreach o in ordered
+        if find_set(o.v) != find_set(o.u)
+            mst.add(o)
+            union(o.v, o.u)
+    return mst
+\end{verbatim}
+
+The action 1 costs $O(|V|+|E|)$ as described before.
+The action 2, the sorting, costs $O(|E|log|E|)$.
+Action 3 and 4 are in constant time.
+So the exact cost of \verb|mst_from_edge| is $O(|V|+|E| + |E|log|E|)$.
+With the assumption of $|E| > |V|$ (true if $G$ is connected)  our algorithm cost is $O(|E|log|E|)$.
+
+To prove the corretness of \verb|mst_from_edge| we assume that the cut property is verified for $e$ (\verb|edge_is_in_mst| check for this).
+
+The output $Y$ is a spanning tree because:
+\begin{itemize}
+    \item cannot have a cycle thanks to the check in the algorithm;
+    \item all nodes of $G$ belongs to $Y$;
+    \item cannot be disconnected, since the first encountered edge that joins two components of $Y$ would have been added;
+\end{itemize}
+
+For the minimality we proceed by induction proving the proposition $P$:
+
+\bigskip
+{\em If F is the set of edges chosen at any stage of the algorithm, then there is some minimum spanning tree that contains F.}
+\bigskip
+
+\begin{itemize}
+    \item At the beginning, when $F = \{e\}$, $P$ is correct thanks to the cut property.
+    \item Assume $p$ is true for some set $F$ and $T$ be the MST that contains $F$:
+    \begin{itemize}
+        \item after choosing the next edge $g$, if $g$ is in $T$ then $P$ is verified for $F \cup \{g\}$;
+        \item else if $g$ is not in $T$ then $T \cup \{g\}$ has a cycle $C$ and there is an edge $f$ that belongs to $C$ and $T$ but not to $F$. Then $T \setminus \{f\} \cup \{g\}$ is a tree with weigth $\leq$ of the weigth of $T$ because the weigth of $f$ cannot be $<$ of the weigth of $g$ (or the algorithm would have chosen $f$ and not $g$). $P$ is verified for $T \setminus \{f\} \cup \{g\}$ that is a MST that contains $F \cup \{g\}$; 
+    \end{itemize}
+    \item by induction $P$ holds also when $F$ is a spanning tree (when $Y$ is $F$) and so it is a MST.
+\end{itemize}
+
+We proved that $Y$ is a spanning tree, that is minimum and that contains $e$.
+
+\newpage
+
+\section*{Appendix}
+
+\subsection*{Exercise 4 Code}
+
+\begin{ccode}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define AT(mat, x, y) (mat)[(x)*2 + (y)]
+#define MIN(a, b) ((a) <= (b) ? (a) : (b))
+
+#define HIRED 1
+#define FREELANCE 0
+ 
+int min_cost_aux(int last_worker_type, int jt, int T, int s, int C, int S, int* freelances, char* works, int* matrix)
+{
+  if(jt == T)
+    return 0;
+  
+  int ct = works[jt] ? freelances[jt] : 0;
+  
+  if(AT(matrix, jt+1, HIRED) == -1)
+    AT(matrix, jt+1, HIRED) = min_cost_aux(HIRED, jt+1, T, s, C, S, freelances, works, matrix, sol);
+  if(AT(matrix, jt+1, FREELANCE) == -1)
+    AT(matrix, jt+1, FREELANCE) = min_cost_aux(FREELANCE, jt+1, T, s, C, S, freelances, works, matrix, sol);
+  
+  int x,y;
+  if(last_worker_type == HIRED) {
+    x = s + AT(matrix, jt+1, HIRED);
+    y = S + ct + AT(matrix, jt+1, FREELANCE);
+  }
+  else {
+    x = C + s + AT(matrix, jt+1, HIRED);
+    y = ct + AT(matrix, jt+1, FREELANCE);
+  }
+  
+  return MIN(x, y);
+}
+
+int min_cost(int T, int s, int C, int S, int* freelances, char* works)
+{
+  int* matrix = calloc(sizeof(int), (2*T +2));
+  memset(matrix, -1, sizeof(int)*2*T);
+  
+  int r = min_cost_aux(FREELANCE, 0, T, s, C, S, freelances, works, matrix, sol);
+  
+  free(matrix);
+  return r;
+}
+
+int main()
+{
+  int freelances[16] = {1,4,3,2,8,11,7,6,9,11,3,13,5,1,9,100}; //costs ct
+  char works[16] = {1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1}; //0 if there is not a task at instant t
+  
+  int cost = min_cost(16, 4, 6, 3, freelances, works);
+  
+  return 0;
+}
+\end{ccode}
+
+\newpage
+
+\subsection*{Exercise 5 Code}
+
+\begin{pycode}
+import networkx as nx
+
+def is_in_mst(G, e):
+    visited = [False]*(len(G.nodes())) 
+    e_w = G.edges[e]["weight"]
+    
+    def aux(v):
+        visited[v] = True
+        r = True
+        
+        for i in G.neighbors(v):
+            if G.edges()[v,i]["weight"] >= e_w:
+                continue
+            if i == e[1]:
+                return False
+            if visited[i] == False: 
+                r = r and aux(i)
+        
+        return r
+    
+    return aux(e[0])
+
+
+def kruskal(G, e=None): 
+    # e!=None forces to include edge e in the MST
+    # otherwise standard kruskal is performed
+    
+    def find(parent, i):
+        if parent[i] == i:
+            return i
+        return find(parent, parent[i])
+
+    def union(parent, order, x, y):
+        rx = find(parent, x)
+        ry = find(parent, y)
+        if order[rx] < order[ry]:
+            parent[rx] = ry
+        elif order[rx] > order[ry]:
+            parent[ry] = rx
+        else :
+            parent[ry] = rx
+            order[rx] += 1
+
+    mst = []
+    
+    i = 0
+    j = 0
+    
+    s_edges = sorted(G.edges(), key=lambda x: G.edges[x]['weight'])
+    if e is not None:
+        s_edges.remove(e)
+        s_edges = [e] + s_edges
+        
+    parent = []
+    rank = [] 
+
+    for n in G.nodes(): 
+        parent.append(n)
+        rank.append(0)
+  
+    while j < len(G.nodes())-1: 
+        if i == len(s_edges): break
+        
+        u,v = s_edges[i]
+        w = G.edges[u,v]['weight']
+        
+        i += 1
+        x = find(parent, u)
+        y = find(parent, v)
+
+        if x != y: 
+            j += 1 
+            mst.append((u,v,w))
+            union(parent, rank, x, y)
+    
+    return mst
+    
+def mst_from_edge(G, e):
+    if not is_in_mst(G, e):
+        raise Exception("edge %s cannot be in a MST" % str(e))
+    return kruskal(G, e)
+    
+\end{pycode}
+
+
+\newpage
+\bibliography{main} 
+\bibliographystyle{ieeetr}
+
+\end{document}
