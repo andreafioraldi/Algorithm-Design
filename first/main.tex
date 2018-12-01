@@ -90,13 +90,14 @@
 
 \lstdefinelanguage{pseudocode}{
     alsodigit = {-},
-    keywords = {algorithm,new,if,else,while,for,foreach,to,in,return,true,false,and,or,not,error}
+    keywords = {algorithm,new,if,else,while,for,foreach,to,in,return,true,false,and,or,not,error,is,skip}
 }
 
 
 \lstnewenvironment{pseudo}[1][]{
     \lstset{
         language=pseudocode,
+        mathescape=true,
         numbers=left,
         stepnumber=1,
         breaklines=true,
@@ -156,25 +157,24 @@ $C$ is the subset of $X$ that contains the centers. The algorithm is the followi
 In pseudocode:
 
 \begin{pseudo}
-algorithm k_centers(G, k)
-    C := new List()
-    c := random_select(G.nodes)
-    G.nodes.pop(c)
-    C.add(c)
-    distances := new Array(G.nodes.size())
-    distances.fill(+inf)
-    while C.size() < k
-        new_c := none
-        max_dist := -inf
-        foreach x in G.nodes
-            d := min(distances[x], G.edge(c, x).weigth)
-            if max_dist < d
-                max_dist = d
-                new_c = c
-        c = new_c
-        G.nodes.pop(c)
-        C.add(c)
-    return C
+algorithm $k\_centers(G, k)$
+    $c := random\_select(G.V)$
+    $G.V = G.V \setminus \{c\}$
+    $C := \{c\}$
+    $distances :=$ new $Array(|G.V|)$
+    $distances_i = +\infty$ $\forall i = 1 ... |G.V|$
+    while $|C| < k$
+        $new\_c := none$
+        $max\_dist := -\infty$
+        foreach $v$ \in $G.V$
+            $d := min(distances_v, G.weigth(c, v))$
+            if $max\_dist < d$
+                $max\_dist = d$
+                $new\_c = c$
+        $c = new\_c$
+        $G.V = G.V \setminus \{c\}$
+        $C = C \cup \{c\}$
+    return $C$
 \end{pseudo}
 
 
@@ -204,7 +204,7 @@ Follows that in our problem $r_A$ must be equal to $r_O$, so our algorithm is op
 
 
 
-\newpage
+\bigskip
 \section*{Exercise 2}
 
 The problem can be represented with a bipartite graph $G(L \cup R, E)$.
@@ -244,7 +244,7 @@ Let $(S, T)$ the mincut associated with the computed maxflow using Ford-Fulkerso
 
 Consider the set $C = (L \cap T) \cup (R \cap S)$. We want to prove that $C$ is a vertex cover and $|C| = |M|$.
 
-Firstly, $C$ is a vertex cover because taking an edge $e \in E$ with endpoint in $L \cap S$ and $R \cap T$ it would have a capacity $c(e) = \infty$ and this is an absurd because it must be 0 or 1, so all edges have endpoint in $(L \cap T) \cup (R \cap S) = C$.
+Firstly, assume that $C$ is not a vertex cover. So we have an edge $e \in E$ with endpoint in $L \cap S$ and $R \cap T$ with capacity $c(e) = \infty$ (the capacity is always $\infty$ in the original edges). This is absurd because an infinite capacity edge cannot be in a minimum cutset (it has one endpoint in $S$ and the other in $T$), so all edges have endpoints in $(L \cap T) \cup (R \cap S) = C$ and $C$ is a vertex cover.
 
 Secondly, we have that:
 \begin{itemize}
@@ -255,14 +255,13 @@ Secondly, we have that:
 
 So a minimum vertex cover can be computed using the Ford-Fulkerson method and is $(L \cap T) \cup (R \cap S)$.
 
-Our solution makes use of a variant of Ford-Fulkerson that guarantee termination, the Edmonds-Karp algorithm, which has cost $O(V E^2)$.
+We propose a solution that makes use of a variant of Ford-Fulkerson that guarantee termination, the Edmonds-Karp algorithm, which has cost $O(|V|*|E|^2)$, and then of two DFS in the residual graph in order to compute $L \cap T$ and $R \cap S$.
+So the final cost is $O(|V|*|E|^2+2*|V|+2*|E|) = O(|V|*|E|^2)$.
 
-
-
-\newpage
+\bigskip
 \section*{Exercise 3}
 
-We represents our problem using a undirected unweigthed graph. Each node of the graph is a friend and an edge $(v,u)$ is presnt if $w(v,u) = 1$.
+We represents our problem using a undirected unweigthed graph. Each node of the graph is a friend and an edge $(v,u)$ is present if $w(v,u) = 1$.
 The goal is to find the subset of nodes $I$ that maximize $\frac{1}{|I|} \Sigma_{x,y \in I} w(x, y)$ respecting the constraint $|I \cap M| = |I \cap F|$.
 In other words, it is the densest subgraph that has an equal number of M and F nodes.
 
@@ -282,33 +281,26 @@ $CERT$ runs in polynomial time, precisely $O(|s|+|t|)$. This certifer can be use
 \subsection*{Reduction}
 
 Given our problem $X$ and the clique decision problem $Y$, we will prove that $Y \leq_p X$.
-The clique decision problem takes as input an undirected unweighted graph $G(V, E)$ and a number $k$ and says yes if the graph contains a clique of $k$ nodes and it is NP-complete.
+The clique decision problem takes as input an undirected unweighted graph $G(V, E)$ and a number $k$ and it says yes if the graph contains a clique of $k$ nodes.
+$Y$ is NP-complete.
 
-Firstly, we show that the problem $Z$ of finding the subset of nodes $I$ so that $\frac{1}{|I|} \Sigma_{x,y \in I} w(x, y) = q$ and $|I \cap M| = |I \cap F|$, where $q$ is an integer given as input, is equivalent to $X$.
-$X$ can be formulated with $log(n)$ calls to $Z$ using a binary search. So if $Z$ is NP-complete then $X$ is NP-complete.
+To transform an input for $Y$ to an input for $X$ we create a graph $G'(M, F, E')$ copying the nodes of graph $G$ into $M$ and the edges into $E'$. Then we create $k$ nodes in $F$ and we connect them in a clique adding edges to $E'$.
 
-Now we must prove that $Y \leq_p Z$.
+Note that an output of $X_{ALG}$ contains a clique of F-nodes because a subgraph of a clique is a clique. So if the output contains $t$ M-nodes then it contains also a clique of F-nodes of size $t$.
 
-To transform an input for $Y$ to an input for $Z$ we create a graph $G'(M, F, E')$ copying the nodes of graph $G$ into $M$ and the edges into $E'$. Then we create $k$ nodes in $F$ and we connect them in a clique adding edges to $E'$.
+Assume that exists a clique of size $k$ composed by $M$-nodes and that $X_{ALG}$ returns an output with less $M$-nodes than $k$ or with $k$ $M$-nodes but that is not a clique.
+This is not possible because the densest graph of $k$ nodes is a clique by definition and a clique of $k$ nodes is denser than every clique with fewer nodes (the density of a clique $\frac{x(x-1)/2}{x}$ is a monotonous growing succession).
 
-In order to transform an instance of $Y$ to $Z$ we set $q = \frac{K-1}{2}$. 
-$\frac{K-1}{2}$ is the maximum density that $G'$ can have and implies that $Z_{ALG}$ must return two cliques of size $k$, one composed by $M$-nodes and the other composed by $F$-nodes \Big(note that $\frac{ K(K-1)/2 + K(K-1)/2 }{|2*K|} = \frac{K-1}{2} = q$\Big).
-
-We prove that $Z_{ALG}$ cannot return a different configuration.
-
-Assume that exists a clique of size $k$ composed by $M$-nodes and that $Z_{ALG}$ returns an output with less $M$-nodes than $k$ or with $k$ $M$-nodes but that is not a clique.
-This is not possible because the densest graph of $k$ nodes is a clique by definition and a clique of $k$ nodes is denser than every clique with fewer nodes (the density of a clique $\frac{x(x-1)/2}{x}$ is a monotonous growing succession). %So the algorithm will consider the maximum clique of $F$-nodes and the clique of $M$ nodes.
-
-Assume that exists a clique of size $k$ composed by nodes of $M$ and that $Z_{ALG}$ returns an output with more $M$-nodes than $k$.
+Assume that exists a clique of size $k$ composed by nodes of $M$ and that $X_{ALG}$ returns an output with more $M$-nodes than $k$.
 This is not possible because we have at most $k$ $F$-nodes and so it violates $|I \cap M| = |I \cap F|$.
 
-So $Z_{ALG}$, our black box solver, can solve an instance of $Y$ if the $M$-nodes in the output forms a clique of size $k$.
+Assume that exists a clique of size $k$ composed by nodes of $M$ and that $X_{ALG}$ returns it as part of the output.
+Deleting the F-nodes clique from the output give us the M-nodes clique.
+Another result is not possible because it implies that there are edges from $M$ to $F$ and this violates our construction of the graph.
 
-We proved that $Z$ is NP-complete, and so also $X$, our problem, is NP-complete.
+So with $X_{ALG}$, our black box solver, we can solve an instance of $Y$ checking if the $M$-nodes in the output forms a clique of size $k$.
 
-
-
-\newpage
+\bigskip
 \section*{Exercise 4}
 
 The related code is in the Appendix.
@@ -335,7 +327,7 @@ When $h = true$ we must take one of this two subcases, the one with the minimum 
 \end{itemize}
 On the contrary, with $h = false$, we must consider the subcase of the minimum cost from the following two:
 \begin{itemize}
-    \item We assume an hired work paying $C$ and then we pay $s$ for the job $j_t$;
+    \item We assume a hired work paying $C$ and then we pay $s$ for the job $j_t$;
     \item We use again a freelance paying the cost $c_t$ for the job $j_t$;
 \end{itemize}
 
@@ -379,25 +371,25 @@ We can store the solutions in a matrix $M_{T+1,2}$ storing in the first column t
 The algorithm, \verb|min_cost|, is the following:
 
 \begin{pseudo}
-algorithm min_cost_aux(t, T, s, C, S, c, h, M)
-    if t = T
-        return 0
-    if M[t+1][1] = empty
-         M[t+1][1] = min_cost_aux(t+1, T, s, C, S, c, 1, M)
-    if M[t+1][0] = empty
-         M[t+1][0] = min_cost_aux(t+1, T, s, C, S, c, 0, M)
-    if h = 1
-        return min(s + M[t+1][1], S + c[t] + M[t+1][0])
-    else if h = 0
-        return min(C + s + M[t+1][1], c[t] + M[t+1][0])
+algorithm $min\_cost\_aux(t, T, s, C, S, c, h, M)$
+    if $t$ is $T$
+        return $0$
+    if $((M)_{t+1})_1$ is $empty$
+         $((M)_{t+1})_1 = min\_cost\_aux(t+1, T, s, C, S, c, 1, M)$
+    if $((M)_{t+1})_0$ is $empty$
+         $((M)_{t+1})_0 = min\_cost\_aux(t+1, T, s, C, S, c, 0, M)$
+    if $h$ is $1$
+        return $min(s + ((M)_{t+1})_1, S + c_t + ((M)_{t+1})_0)$
+    else if $h$ is $0$
+        return $min(C + s + ((M)_{t+1})_1, c_t + ((M)_{t+1})_0)$
 \end{pseudo}
 \begin{pseudo}
-algorithm min_cost(j, T, s, C, S, c)
-    M := new Matrix(T+1, 2) 
-    for t = 0 to T
-        if j[t] = false
-            c[t] = 0
-    return min_cost_aux(0, T, s, C, S, c, 0, M)
+algorithm $min\_cost(j, T, s, C, S, c)$
+    $M :=$ new $Matrix(T+1, 2) $
+    for $t = 0$ to $T$
+        if not $j_t$
+            $c_t = 0$
+    return $min\_cost\_aux(0, T, s, C, S, c, 0, M)$
 \end{pseudo}
 
 In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
@@ -426,25 +418,27 @@ We can covert the works $j_t$ with $W_t \subset W$ to $W_t = W$ using the same c
 So we set ${c^j}_t = 0$ when $j \notin W_t$.
 
 With this consideration, we can formulate the problem as derived from 4.1.
-In fact, for each type of worker $w \in W$, we can just run the 4.1 algorithm and sum all the minimum cost.
+In fact, for each type of worker $w \in W$ we can just run the 4.1 algorithm and sum all the minimum costs.
+
+In pseudocode (we directly associate a job $j_t$ wth the set $W_t$ to avoid ambiguity with $W$):
 
 \begin{pseudo}
-algorithm min_cost_multi_types(W, Wt, T, s, C, S, c)
-    res := 0
-    for t = 0 to T
-        foreach w in W
-            if w not in Wt[t]
-                c[w][t] = 0
-    foreach w in W
-        M := new Matrix(T+1, 2)
-        res = res + min_cost_aux(0, T, s, C, S, c[w], 0, M)
-    return res
+algorithm $min\_cost\_multi\_types(j, W, T, s, C, S, c)$
+    $r := 0$
+    for $t = 0$ to $T$
+        foreach $w \in W$
+            if not $(j_t)_w$
+                ${c^w}_t = 0$
+    foreach $w \in W$
+        $M :=$ new $Matrix(T+1, 2)$
+        $r = r + min\_cost\_aux(0, T, s, C, S, c^w, 0, M)$
+    return $r$
 \end{pseudo}
 
-The cost of the foreach loop inside the for is $k$, the cardinality of $|W|$.
-The outer for has $T$ iterations, so the total cost is $O(T*k)$.
-The cost of \verb|min_cost_aux| os $O(T)$ and it is inside a foreach loop of $k$ iterations, so the cost of this second loop is $O(k*T)$.
-This implies that the total cost of \verb|min_cost_multi_types| is $O(T*k) = O(|Wt|*|W|)$, so it is polynomial in function of the size of the two arrays in the input.
+The cost of the loop at line 4 is $k$, the cardinality of $|W|$.
+The outer for at lien 3 has $T$ iterations, so the total cost is $O(T*k)$.
+The cost of \verb|min_cost_aux| is $O(T)$ and it is inside a loop of $k$ iterations, so the cost of this second loop at line 7 is $O(k*T)$.
+This implies that the total cost of \verb|min_cost_multi_types| is $O(T*k) = O(|j|*|W|)$, so it is polynomial in function of the size of the two sets in the input.
 Considering the number $L = 2^k$ we can express the cost as $O(log_2(L)*T)$.
 
 To prove that the algorithm is correct we proceed by induction.
@@ -454,9 +448,7 @@ Assume now that it is correct for the case $k = i$.
 In the case with $k = i+1$ we can see that we are adding a new type of worker to $W$.
 The types of workers are independent of each other, and adding the result of \verb|min_cost| using the type of worker $i+1$ to the total cost computed in the case $k=i$ we get the minimum cost.
 
-
-
-\newpage
+\bigskip
 \section*{Exercise 5}
 
 The related code is in the Appendix.
@@ -489,21 +481,21 @@ This implies that $e$ is the edge with minimum cost with an endpoint in $S$ and 
 We designed an algorithm, \verb|edge_is_in_mst|, based on DFS in order to verify if exists a path formed by edges with weight less than $w$ that connects $v$ to $u$:
 
 \begin{pseudo}
-algorithm edge_is_in_mst_aux(G, e, v)
-    a := true
-    v.visited = true
-    foreach i in G.neighbors(v)
-        if G.edge(v, i).weight >= e.weight
+algorithm $edge\_is\_in\_mst\_aux(G, e, v)$
+    $r := true$
+    $v.visited = true$
+    foreach $i \in G.neighbors(v)$
+        if $G.weight(v, i) >= G.weight(e)$
             skip
-        if i = e.u
-            return false
-        if not i.visited
-            a = a and edge_is_in_mst_aux(G, e, i)
-    return a
+        if $i$ is $e.u$
+            return $false$
+        if not $i.visited$
+            $r = r and edge\_is\_in\_mst\_aux(G, e, i)$
+    return $r$
 \end{pseudo}
 \begin{pseudo}
-algorithm edge_is_in_mst(G, e)
-    return edge_is_in_mst_aux(G, e, e.v)
+algorithm $edge\_is\_in\_mst(G, e)$
+    return $edge\_is\_in\_mst\_aux(G, e, e.v)$
 \end{pseudo}
 
 Checking the weight of adjacent edges does not add cost to the DFS since is a $O(1)$ operation. Also stopping the algorithm when \verb|e.u| is encountered does not add any cost, so the final cost of \verb|edge_is_in_mst| is the cost of a DFS, $O(|V|+|E|)$.
@@ -526,20 +518,19 @@ Our algorithm is the following:
 In pseudocode:
 
 \begin{pseudo}
-algorithm mst_from_edge(G, e)
-    if not edge_is_in_mst(G, e)
+algorithm $mst\_from\_edge(G, e)$
+    if not $edge\_is\_in\_mst(G, e)$
         error()
-    mst := new List()
-    foreach v in G.nodes
-        make_set(v)
-    ordered := sort_by_increasing_weigth(G.edges)
-    ordered.pop(e)
-    mst.add(e)
-    foreach o in ordered
-        if find_set(o.v) != find_set(o.u)
-            mst.add(o)
-            union(o.v, o.u)
-    return mst
+    foreach $v \in G.V$
+        $make\_set(v)$
+    $ordered := sort\_by\_increasing\_weigth(G.E)$
+    $ordered = ordered \setminus e$
+    $mst := \{e\}$
+    foreach $o \in ordered$
+        if $find\_set(o.v)$ is not $find\_set(o.u)$
+            $mst = mst \cup \{o\}$
+            $union(o.v, o.u)$
+    return $mst$
 \end{pseudo}
 
 The action 1 costs $O(|V|+|E|)$ as described before.
