@@ -166,7 +166,7 @@ algorithm $k\_centers(G, k)$
     while $|C| < k$
         $new\_c := none$
         $max\_dist := -\infty$
-        foreach $v$ \in $G.V$
+        foreach $v \in G.V$
             $d := min(distances_v, G.weigth(c, v))$
             if $max\_dist < d$
                 $max\_dist = d$
