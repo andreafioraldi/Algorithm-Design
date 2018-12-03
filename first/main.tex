@@ -151,7 +151,7 @@ $C$ is the subset of $X$ that contains the centers. The algorithm is the followi
     \item Pick an arbitrary point $c_1$ and insert in into $C$;
     \item Pick the point $x$ with the highest distance from the nearest center $c_i$;
     \item Insert $x$ into $C$;
-    \item Continue from 1 until $|C| < k$;
+    \item Continue from 2 until $|C| < k$;
 \end{enumerate}
 
 In pseudocode:
@@ -178,14 +178,14 @@ algorithm $k\_centers(G, k)$
 \end{pseudo}
 
 
-The \verb|distances| list is an optimization used to avoid to compute the distance between a node $x \in X$ and all centers in all of the iterations. \verb|distances| keeps track of the distance each node from its nearest center. Each iteration only a center $c_i$ is added, so the distance from the nearest center can remain the same or be updated to $d(x, c_i)$.
+The \verb|distances| list is an optimization used to avoid to compute the distance between a node $x \in X$ and all centers in all of the iterations. \verb|distances| keeps track of the distance of each node from its nearest center. In each iteration only a center $c_i$ is added, so the distance from the nearest center can remain the same or be updated to $d(x, c_i)$.
 
-So this approximation cost is $O(n*k)$ because in each iteration all nodes are processed and there are $k$ iterations. 
+This approximation cost is $O(n*k)$ because in each iteration all nodes are processed and there are $k$ iterations. 
 
 To compute the permutation requested by the exercise we run the algorithm with $k = n$, where $n = |X|$.
-This is possible thanks to the fact that in this greedy algorithm the iteration $i$ is not dependent from the presence of an iteration $i+1$ so computing $k\_center(G, k)$ is equivalent to $slice(k\_center(G, n), 1, k)$ (compute using $k=n$ and after take only the first $k$ elements of the output).
+This is possible thanks to the fact that in this greedy algorithm the iteration $i$ is not dependent on the presence of an iteration $i+1$ so computing $k\_center(G, k)$ is equivalent to $slice(k\_center(G, n), 1, k)$ (compute using $k=n$ and after take only the first $k$ elements of the output).
 
-This greedy algorithm is optimal for our problem thanks to the fact that the distances can be only 0, 1 or 3.
+Now, we prove that this greedy algorithm is optimal for our problem thanks to the fact that the distances can be only 0, 1 or 3.
 
 For the K-center this algorithm is a 2-approximation, so the approximated minimized maximum of the distances of each point in $X$ to the closest center is at most the twice of the optimal one.
 We will notate the approximated with $r_A$ and the optimal with $r_O$.
@@ -201,8 +201,6 @@ There are other 4 cases to consider:
 \end{itemize}
 
 Follows that in our problem $r_A$ must be equal to $r_O$, so our algorithm is optimal and not an approximation.
-
-
 
 \bigskip
 \section*{Exercise 2}
