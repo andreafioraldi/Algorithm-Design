@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}   % for \textcolor
+\usepackage{relsize}
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
 %\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
@@ -387,18 +388,18 @@ algorithm $min\_cost\_aux(t, T, s, C, S, c, h, M)$
         return $min(C + s + ((M)_{t+1})_1, c_t + ((M)_{t+1})_0)$
 \end{pseudo}
 \begin{pseudo}
-algorithm $min\_cost(T, s, C, S, tasks)$
-    $M :=$ new $Matrix(T+1, 2)$
-    $c :=$ new $Array(T)$
-    $c_i = 0$ $\forall i = 1 ... T$
+algorithm $min\_cost(I, s, C, S, tasks)$
+    $M :=$ new $Matrix(|I|+1, 2)$
+    $c :=$ new $Array(|I|)$
+    $c_i = 0$ $\forall i \in I$
     $j := 0$
-    for $t = 0$ to $T$
+    foreach $t \in I$
         while $j < size(tasks) \land (tasks_j)_0$ is $t$
             $c_t = c_t + (tasks_j)_1$
-    return $min\_cost\_aux(0, T, s, C, S, c, 0, M)$
+    return $min\_cost\_aux(0, |I|, s, C, S, c, 0, M)$
 \end{pseudo}
 
-The for loop in the \verb|min_cost| body costs $T$ plus the number of tasks that are not alone in an instant, generally depends on the size of the tasks array.
+The foreach loop in the \verb|min_cost| body costs $T$ plus the number of tasks that are not alone in an instant, generally depends on the size of the tasks array.
 
 In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
 
@@ -426,13 +427,57 @@ So the minimum is always returned in every iteration.
 
 \subsection*{Part 2}
 
-We can covert the works $j_t$ with $W_t \subset W$ to $W_t = W$ using the same consideration for the "no task" of the previous part.
-So we set ${c^j}_t = 0$ when $j \notin W_t$.
+We can apply the considerations about the "not tasks" and the multiple tasks in a time instant of the previous point also to this problem.
 
-With this consideration, we can formulate the problem as derived from 4.1.
-In fact, for each type of worker $w \in W$ we can just run the 4.1 algorithm and sum all the minimum costs.
+With a cost matrix $CM_{T,K}$ we define the individual cost of a freelance of skill $k \in \{0 ... K\}$ at time $t \in \{0 ... T\}$ as follows:
 
-I assume that an hired worker has an hiring cost, a firing cost and a salary different from a worker with a different skill. So now $s$, $C$ and $S$ are lists.
+\bigskip
+$((CM)_t)_k = \Sigma_{j \in J_{t,k}} cost(j)$ with $J_{t,k} = \{j | time(j) = t \land k \in skills(j)\}$
+\bigskip
+
+With this consideration we merged all the tasks at the same time in a single task with a different cost for each skill. 
+This is possible due to the fact that if we have an hired worker with the skill $k$ at time $t$ he can process all the works at time $t$ that require the skill $k$.
+So the choice is or use an hired worker for the skill $k$, or use all freelances with the skill $k$ for the tasks at time $t$.
+
+With a similar consideration as the one of problem 4.1, we insert costs 0 in $((CM)_t)_k$ when all tasks at time $t$ do not require the skill $k$. If there are not tasks at time $t$ we insert a row of all zeroes.
+
+Now there is only a task for time instant and all tasks have the same number of individual costs, $K$.
+
+We can solve the problem using a brute-force that do a recursion over all possible permutation of hired and freelance worker at each time instant.
+$h$ is an array of $K$ elements that associate the skill $k$ to a boolean representing if we have an hired worker with the skill $k$ or not.
+
+\[
+    pay(h, next, t) = \mathlarger{\sum}_{k \in \{0 ... K\}}
+    \begin{cases}
+        s & \text{if } h_k = true \land next_k = true \\
+        S + ((CM)_t)_k & \text{if } h_k = true \land next_k = false \\
+        C + s & \text{if } h_k = false \land next_k = true \\
+        ((CM)_t)_k & \text{if } h_k = false \land next_k = false
+    \end{cases}
+\]
+
+\[
+    OPT(t, h) = min\Bigg( OPT(t+1, next) + pay(h, next, t)  \text{ }\forall\text{ } next \in D'_{(2,T)}({true, false})\Bigg)
+\]
+
+We can memorize $OPT(t+1, next)$ in a matrix $M_{T,2^K}$ in order to gain a polynomial cost in function fo $2^K$.
+
+% TODO
+
+
+\begin{pseudo}
+algorithm $skills\_min\_cost\_aux(j, W, T, s, C, S, c)$
+    $r := 0$
+    for $t = 0$ to $T$
+        foreach $w \in W$
+            if not $(j_t)_w$
+                $c_{w,t} = 0$
+    foreach $w \in W$
+        $M :=$ new $Matrix(T+1, 2)$
+        $r = r + min\_cost\_aux(0, T, s_w, C_w, S_w, c_w, 0, M)$
+    return $r$
+\end{pseudo}
+
 
 In pseudocode (we directly associate a task $j_t$ wth the set $W_t$ to avoid ambiguity with $W$):
 
@@ -641,7 +686,11 @@ int min_cost(int T, int s, int C, int S, struct Task* tasks, int task_num)
         }
     }
     
-    return min_cost_aux(FREELANCE, 0, T, s, C, S, c, matrix);
+    int r = min_cost_aux(FREELANCE, 0, T, s, C, S, c, matrix);
+    
+    free(matrix);
+    free(c);
+    return r;
 }
 
 int main()
