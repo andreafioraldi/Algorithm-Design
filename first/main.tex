@@ -162,7 +162,7 @@ algorithm $k\_centers(G, k)$
     $G.V = G.V \setminus \{c\}$
     $C := \{c\}$
     $distances :=$ new $Array(|G.V|)$
-    $distances_i = +\infty$ $\forall i = 1 ... |G.V|$
+    $distances_i = +\infty$ $\forall i = 0 ... |G.V|$
     while $|C| < k$
         $new\_c := none$
         $max\_dist := -\infty$
@@ -308,52 +308,57 @@ The related code is in the Appendix.
 Assumptions:
 \begin{itemize}
     \item at the beginning we do not have a hired worker;
-    \item at the end if we have and hired worker we do not have to outsource him;
+    \item at the end if we have and hired worker we do not have to fire him;
 \end{itemize}
 
-We never use a freelance when we have a hired worker because we must pay a hired worker also when not working, so if we have a hired worker is always convenient to use him.
+We never use a freelance when we have a hired worker because we must pay a hired worker also when is not working, so if we have a hired worker is always convenient to use him.
+
+In addition, it is never covenient to use a freelance if we decide to use an hired worker because he can process all the works at time $t$.
+So the choice is between use an hired worker or use $k$ freelances when we have $k$ works at time $t$. This is equivalent to consider the cost of using the $k$ freelences to the cost of using a freelence with cost equal to the sum of all costs of the $k$ freelances and then consider only a work for each time instant.
+
+From now on we consider that each time instant can have 0 or 1 tasks exploiting the previous consideration.
 
 We denote as $OPT(x, h)$ the minimum cost of execution of the task $j_t$ with $t \in \{x,...,T\}$ and with $h = true$ when we have a hired worker at disposition.
 So the solution that we are looking for is $OPT(0, false)$.
 
-The cost of a single job can be explained using two cases:
+The cost of a single task can be explained using two cases:
 
 When $h = true$ we must take one of this two subcases, the one with the minimum cost:
 \begin{itemize}
-    \item We use the hired worker that we have to pay him $s$ for the job $j_t$;
-    \item We outsource him paying $S$ and then we use a freelance paying the cost $c_t$ for the job $j_t$;
+    \item We use the hired worker that we have to pay him $s$ for the task $j_t$;
+    \item We fire him paying $S$ and then we use a freelance paying the cost $c_t$ for the task $j_t$;
 \end{itemize}
 On the contrary, with $h = false$, we must consider the subcase of the minimum cost from the following two:
 \begin{itemize}
-    \item We assume a hired work paying $C$ and then we pay $s$ for the job $j_t$;
-    \item We use again a freelance paying the cost $c_t$ for the job $j_t$;
+    \item We assume a hired work paying $C$ and then we pay $s$ for the task $j_t$;
+    \item We use again a freelance paying the cost $c_t$ for the task $j_t$;
 \end{itemize}
 
-We have to not consider the case in which there is not a job at the time instance $t$ and instead we can simply set the cost $c_t$ of a freelance to $0$ in that case.
-To prove this claim assume that we do not have a job $j_t$ at the instant $t$ and we have a hired worker.
+We have to not consider the case in which there is not a task at the time instant $t$ and instead we can simply set the cost $c_t$ of a freelance to $0$ in that case.
+To prove this claim assume that we do not have a task $j_t$ at the instant $t$ (we call it a "no task" time instant) and we have a hired worker.
 In this case, we must choose one of the following possibilities:
 \begin{itemize}
-    \item Outsource the hired worker and wait until the next job;
+    \item Fire the hired worker and wait until the next task;
     \item Pay him to do nothing;
 \end{itemize}
 Otherwise, when we do not have a hired worker we do nothing.
 
-Now if we consider a freelance with cost $0$ we can express the cost of the "not job" as follows:
+Now if we consider a freelance with cost $0$ we can express the cost of the "not task" as follows:
 
 When $h = true$ we must take one of this two subcases, the one with the minimum cost:
 \begin{itemize}
-    \item We use the hired worker that we have to pay him $s$ for the "not job" $j_t$;
-    \item We outsource him paying $S$ and then we use a freelance paying 0 for the job $j_t$;
+    \item We use the hired worker that we have to pay him $s$ for the "not task" $j_t$;
+    \item We fire him paying $S$ and then we use a freelance paying 0 for the task $j_t$;
 \end{itemize}
 On the contrary, with $h = false$, we must consider the subcase of the minimum cost from the following two:
 \begin{itemize}
-    \item We assume a hired work paying $C$ and then we pay $s$ for the job $j_t$ (of course this can never be the minimum);
-    \item We use again a freelance paying the cost 0 for the job $j_t$ (this is the always chosen option);
+    \item We assume a hired work paying $C$ and then we pay $s$ for the task $j_t$ (of course this can never be the minimum);
+    \item We use again a freelance paying the cost 0 for the task $j_t$ (this is the always chosen option);
 \end{itemize}
 
-So considering a "not job" is equivalent of the previously described situation and we do not have to distinguish the cases in our algorithm, we just set $c_t = 0$ when there is not a job $j_t$.
+So considering a "not task" is equivalent of the previously described situation and we do not have to distinguish the cases in our algorithm, we just set $c_t = 0$ when there is not a task $j_t$.
 
-Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of the successive jobs until the time instant $T$, so we explore all the possible following cases:
+Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of the successive tasks until the time instant $T$, so we explore all the possible following cases:
 
 \[
     OPT(x, h) = 
@@ -366,7 +371,7 @@ Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of th
 This can be traduced into an algorithm that explores all the possible configurations and so a brute-force. In order to gain a polynomial cost, we used the memorization of the results of $OPT(x, h)$.
 We can store the solutions in a matrix $M_{T+1,2}$ storing in the first column the values of $OPT(x, false)$ and in the second $OPT(x, true)$. Obviously the rows are related to the $x$, so encoding $false = 0$ and $true = 1$ we can get the return value of $OPT(x, h)$ with $\big(\big(M\big)_x\big)_h$. Note that the last row of $M$ is present in order to avoid to check if we are in the case $t = T-1$.
 
-The algorithm, \verb|min_cost|, is the following:
+The algorithm, \verb|min_cost|, is the following (tasks is an array of tuples (time instant, outsourcing cost), $T$ is a number but we must consider as input the time interval $I = \{0 ... T\}$):
 
 \begin{pseudo}
 algorithm $min\_cost\_aux(t, T, s, C, S, c, h, M)$
@@ -382,17 +387,24 @@ algorithm $min\_cost\_aux(t, T, s, C, S, c, h, M)$
         return $min(C + s + ((M)_{t+1})_1, c_t + ((M)_{t+1})_0)$
 \end{pseudo}
 \begin{pseudo}
-algorithm $min\_cost(j, T, s, C, S, c)$
-    $M :=$ new $Matrix(T+1, 2) $
+algorithm $min\_cost(T, s, C, S, tasks)$
+    $M :=$ new $Matrix(T+1, 2)$
+    $c :=$ new $Array(T)$
+    $c_i = 0$ $\forall i = 1 ... T$
+    $j := 0$
     for $t = 0$ to $T$
-        if not $j_t$
-            $c_t = 0$
+        while $j < size(tasks) \land (tasks_j)_0$ is $t$
+            $c_t = c_t + (tasks_j)_1$
     return $min\_cost\_aux(0, T, s, C, S, c, 0, M)$
 \end{pseudo}
 
+The for loop in the \verb|min_cost| body costs $T$ plus the number of tasks that are not alone in an instant, generally depends on the size of the tasks array.
+
 In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
 
-Every time the procedure invokes the recurrence it fills two entries of the matrix. An entry cannot be filled more than one time. The entries in $M$ are $2*T+2$ and so the algorithm perform at most $2*T+2$ recursions and so the cost is linear, $O(T)$.
+Every time the procedure invokes the recurrence it fills two entries of the matrix. An entry cannot be filled more than one time. The entries in $M$ are $2*T+2$ and so the it performs at most $2*T+2$ recursions and so the cost is linear, $O(T)$.
+
+The final cost is so $O(|I| + |tasks|) = O(T + |tasks|)$.
 
 The proof of correctness is the following:
 
@@ -410,15 +422,19 @@ For the case $t$ we consider two options:
     \item $h = false$: the minimum cost is $min(C + s + X, c_t + Y)$;
 \end{itemize}
 
+So the minimum is always returned in every iteration.
+
 \subsection*{Part 2}
 
-We can covert the works $j_t$ with $W_t \subset W$ to $W_t = W$ using the same consideration for the "no job" of the previous part.
+We can covert the works $j_t$ with $W_t \subset W$ to $W_t = W$ using the same consideration for the "no task" of the previous part.
 So we set ${c^j}_t = 0$ when $j \notin W_t$.
 
 With this consideration, we can formulate the problem as derived from 4.1.
 In fact, for each type of worker $w \in W$ we can just run the 4.1 algorithm and sum all the minimum costs.
 
-In pseudocode (we directly associate a job $j_t$ wth the set $W_t$ to avoid ambiguity with $W$):
+I assume that an hired worker has an hiring cost, a firing cost and a salary different from a worker with a different skill. So now $s$, $C$ and $S$ are lists.
+
+In pseudocode (we directly associate a task $j_t$ wth the set $W_t$ to avoid ambiguity with $W$):
 
 \begin{pseudo}
 algorithm $min\_cost\_multi\_types(j, W, T, s, C, S, c)$
@@ -426,10 +442,10 @@ algorithm $min\_cost\_multi\_types(j, W, T, s, C, S, c)$
     for $t = 0$ to $T$
         foreach $w \in W$
             if not $(j_t)_w$
-                ${c^w}_t = 0$
+                $c_{w,t} = 0$
     foreach $w \in W$
         $M :=$ new $Matrix(T+1, 2)$
-        $r = r + min\_cost\_aux(0, T, s, C, S, c^w, 0, M)$
+        $r = r + min\_cost\_aux(0, T, s_w, C_w, S_w, c_w, 0, M)$
     return $r$
 \end{pseudo}
 
@@ -580,51 +596,61 @@ We proved that $Y$ is a spanning tree, that is minimum and that contains $e$.
 
 #define HIRED 1
 #define FREELANCE 0
- 
-int min_cost_aux(int last_worker_type, int jt, int T, int s, int C, int S, int* freelances, char* works, int* matrix)
+
+struct Task
 {
-  if(jt == T)
+    int time;
+    int cost;
+};
+
+int min_cost_aux(int last_worker_type, int t, int T, int s, int C, int S, int* c, int* matrix)
+{
+  if(t == T)
     return 0;
   
-  int ct = works[jt] ? freelances[jt] : 0;
-  
-  if(AT(matrix, jt+1, HIRED) == -1)
-    AT(matrix, jt+1, HIRED) = min_cost_aux(HIRED, jt+1, T, s, C, S, freelances, works, matrix, sol);
-  if(AT(matrix, jt+1, FREELANCE) == -1)
-    AT(matrix, jt+1, FREELANCE) = min_cost_aux(FREELANCE, jt+1, T, s, C, S, freelances, works, matrix, sol);
+  if(AT(matrix, t+1, HIRED) == -1)
+    AT(matrix, t+1, HIRED) = min_cost_aux(HIRED, t+1, T, s, C, S, c, matrix);
+  if(AT(matrix, t+1, FREELANCE) == -1)
+    AT(matrix, t+1, FREELANCE) = min_cost_aux(FREELANCE, t+1, T, s, C, S, c, matrix);
   
   int x,y;
   if(last_worker_type == HIRED) {
-    x = s + AT(matrix, jt+1, HIRED);
-    y = S + ct + AT(matrix, jt+1, FREELANCE);
+    x = s + AT(matrix, t+1, HIRED);
+    y = S + c[t] + AT(matrix, t+1, FREELANCE);
   }
   else {
-    x = C + s + AT(matrix, jt+1, HIRED);
-    y = ct + AT(matrix, jt+1, FREELANCE);
+    x = C + s + AT(matrix, t+1, HIRED);
+    y = c[t] + AT(matrix, t+1, FREELANCE);
   }
   
   return MIN(x, y);
 }
 
-int min_cost(int T, int s, int C, int S, int* freelances, char* works)
+
+int min_cost(int T, int s, int C, int S, struct Task* tasks, int task_num)
 {
-  int* matrix = calloc(sizeof(int), (2*T +2));
-  memset(matrix, -1, sizeof(int)*2*T);
-  
-  int r = min_cost_aux(FREELANCE, 0, T, s, C, S, freelances, works, matrix, sol);
-  
-  free(matrix);
-  return r;
+    int* matrix = calloc(sizeof(int), (2*T +2));
+    memset(matrix, -1, sizeof(int)*2*T);
+    
+    int* c = calloc(sizeof(struct Task), T);
+    int i, j;
+    for(i = 0, j = 0; i < T; ++i) {
+        while(j < task_num && tasks[j].time == i) {
+            c[i] += tasks[j].cost;
+            ++j;
+        }
+    }
+    
+    return min_cost_aux(FREELANCE, 0, T, s, C, S, c, matrix);
 }
 
 int main()
 {
-  int freelances[16] = {1,4,3,2,8,11,7,6,9,11,3,13,5,1,9,100}; //costs ct
-  char works[16] = {1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1}; //0 if there is not a task at instant t
-  
-  int cost = min_cost(16, 4, 6, 3, freelances, works);
-  
-  return 0;
+    struct Task tasks[] = {{0,3},{0,2},{1,6},{4,1}};
+    int sol = min_cost(5, 2, 2, 3, tasks, 4);
+    
+    printf("%d\n", sol); //10
+    return 0;
 }
 \end{ccode}
 
