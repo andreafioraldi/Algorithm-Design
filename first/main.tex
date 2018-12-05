@@ -287,11 +287,11 @@ To transform an input for $Y$ to an input for $X$ we create a graph $G'(M, F, E'
 
 Note that an output of $X_{ALG}$ contains a clique of F-nodes because a subgraph of a clique is a clique. So if the output contains $t$ M-nodes then it contains also a clique of F-nodes of size $t$.
 
-Assume that exists a clique of size $k$ composed by $M$-nodes and that $X_{ALG}$ returns an output with less $M$-nodes than $k$ or with $k$ $M$-nodes but that is not a clique.
-This is not possible because the densest graph of $k$ nodes is a clique by definition and a clique of $k$ nodes is denser than every clique with fewer nodes (the density of a clique $\frac{x(x-1)/2}{x}$ is a monotonous growing succession).
-
 Assume that exists a clique of size $k$ composed by nodes of $M$ and that $X_{ALG}$ returns an output with more $M$-nodes than $k$.
 This is not possible because we have at most $k$ $F$-nodes and so it violates $|I \cap M| = |I \cap F|$.
+
+Assume that exists a clique of size $k$ composed by $M$-nodes and that $X_{ALG}$ returns an output with less $M$-nodes than $k$ or with $k$ $M$-nodes but that is not a clique.
+This is not possible because the densest graph of $k$ nodes is a clique by definition and a clique of $k$ nodes is denser than every clique with fewer nodes (the density of a clique $\frac{x(x-1)/2}{x}$ is a monotonous growing succession).
 
 Assume that exists a clique of size $k$ composed by nodes of $M$ and that $X_{ALG}$ returns it as part of the output.
 Deleting the F-nodes clique from the output give us the M-nodes clique.
@@ -314,8 +314,8 @@ Assumptions:
 
 We never use a freelance when we have a hired worker because we must pay a hired worker also when is not working, so if we have a hired worker is always convenient to use him.
 
-In addition, it is never covenient to use a freelance if we decide to use an hired worker because he can process all the works at time $t$.
-So the choice is between use an hired worker or use $k$ freelances when we have $k$ works at time $t$. This is equivalent to consider the cost of using the $k$ freelences to the cost of using a freelence with cost equal to the sum of all costs of the $k$ freelances and then consider only a work for each time instant.
+In addition, it is never convenient to use a freelance if we decide to use a hired worker because he can process all the works at time $t$.
+So the choice is between using a hired worker or use $k$ freelances when we have $k$ works at time $t$. This is equivalent to consider the cost of using the $k$ freelances to the cost of using a freelance with a cost equal to the sum of all costs of the $k$ freelances and then consider only a work for each time instant.
 
 From now on we consider that each time instant can have 0 or 1 tasks exploiting the previous consideration.
 
@@ -335,7 +335,7 @@ On the contrary, with $h = false$, we must consider the subcase of the minimum c
     \item We use again a freelance paying the cost $c_t$ for the task $j_t$;
 \end{itemize}
 
-We have to not consider the case in which there is not a task at the time instant $t$ and instead we can simply set the cost $c_t$ of a freelance to $0$ in that case.
+We have to not consider the case in which there is not a task at the time instant $t$ and instead, we can simply set the cost $c_t$ of a freelance to $0$ in that case.
 To prove this claim assume that we do not have a task $j_t$ at the instant $t$ (we call it a "no task" time instant) and we have a hired worker.
 In this case, we must choose one of the following possibilities:
 \begin{itemize}
@@ -344,7 +344,7 @@ In this case, we must choose one of the following possibilities:
 \end{itemize}
 Otherwise, when we do not have a hired worker we do nothing.
 
-Now if we consider a freelance with cost $0$ we can express the cost of the "not task" as follows:
+Now if we consider a freelance with cost $0$ we can express the cost of the "no task" as follows:
 
 When $h = true$ we must take one of this two subcases, the one with the minimum cost:
 \begin{itemize}
@@ -357,7 +357,7 @@ On the contrary, with $h = false$, we must consider the subcase of the minimum c
     \item We use again a freelance paying the cost 0 for the task $j_t$ (this is the always chosen option);
 \end{itemize}
 
-So considering a "not task" is equivalent of the previously described situation and we do not have to distinguish the cases in our algorithm, we just set $c_t = 0$ when there is not a task $j_t$.
+So considering a "no task" is equivalent of the previously described situation and we do not have to distinguish the cases in our algorithm, we just set $c_t = 0$ when there is not a task $j_t$.
 
 Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of the successive tasks until the time instant $T$, so we explore all the possible following cases:
 
@@ -404,7 +404,7 @@ The foreach loop in the \verb|min_cost| body costs $T$ plus the number of tasks 
 
 In general the execution of the body of \verb|min_cost_aux| takes $O(1)$ excluding the recursive calls that it generates. We can count the number of recursion counting the entries of $M$ that are not empty.
 
-Every time the procedure invokes the recurrence it fills two entries of the matrix. An entry cannot be filled more than one time. The entries in $M$ are $2*T+2$ and so the it performs at most $2*T+2$ recursions and so the cost is linear, $O(T)$.
+Every time the procedure invokes the recurrence it fills two entries of the matrix. An entry cannot be filled more than one time. The entries in $M$ are $2*T+2$ and so it performs at most $2*T+2$ recursions and so the cost is linear, $O(T)$.
 
 The final cost is so $O(|I| + |tasks|) = O(T + |tasks|)$.
 
@@ -436,16 +436,16 @@ With a cost matrix $CM_{T,K}$ we define the individual cost of a freelance of sk
 $((CM)_t)_k = \Sigma_{j \in J_{t,k}} cost(j)$ with $J_{t,k} = \{j | time(j) = t \land k \in skills(j)\}$
 \bigskip
 
-With this consideration we merged all the tasks at the same time in a single task with a different cost for each skill. 
-This is possible due to the fact that if we have an hired worker with the skill $k$ at time $t$ he can process all the works at time $t$ that require the skill $k$.
-So the choice is or use an hired worker for the skill $k$, or use all freelances with the skill $k$ for the tasks at time $t$.
+With this consideration, we merged all the tasks at the same time in a single task with a different cost for each skill. 
+This is possible due to the fact that if we have a hired worker with the skill $k$ at time $t$ he can process all the works at time $t$ that require the skill $k$.
+So the choice is or use a hired worker for the skill $k$, or use all freelances with the skill $k$ for the tasks at time $t$.
 
-With a similar consideration as the one of problem 4.1, we insert costs 0 in $((CM)_t)_k$ when all tasks at time $t$ do not require the skill $k$. If there are not tasks at time $t$ we insert a row of all zeroes.
+With a similar consideration as the one of problem 4.1, we insert costs 0 in $((CM)_t)_k$ when all tasks at time $t$ do not require the skill $k$. If there are no tasks at time $t$ we insert a row of all zeroes.
 
 Now there is only a task for time instant and all tasks have the same number of individual costs, $K$.
 
-We can solve the problem using a brute-force that do a recursion over all possible permutation of hired and freelance worker at each time instant.
-$h$ is an array of $K$ elements that associate the skill $k$ to a boolean representing if we have an hired worker with the skill $k$ or not.
+We can solve the problem using a brute-force that does a recursion over all possible permutation of hired and freelance worker at each time instant.
+$h$ is an array of $K$ elements that associate the skill $k$ to a boolean representing if we have a hired worker with the skill $k$ or not.
 
 \[
     helper(h, next, t) = \mathlarger{\sum}_{k \in \{0 ... K\}}
@@ -507,14 +507,19 @@ algorithm $skills\_min\_cost(I, s, C, S, K, tasks)$
 \end{pseudo}
 
 The cost of the body of \verb|skills_min_cost| is $O(K*(|I|+|tasks|))$ (note that it is more or less $K$ time the loop in \verb|min_cost|).
-The cost of the body of \verb|skills_min_cost_aux| is $O(2^K*K)$ if we do not consider the recurive calls because we have a loop of $K$ iterations in a loop of $2^K$ iteration. Not that the loop at line 9 can be avoided if we preprocess the value in a matrix.
+The cost of the body of \verb|skills_min_cost_aux| is $O(2^K*K)$ if we do not consider the recursive calls because we have a loop of $K$ iterations in a loop of $2^K$ iteration. Not that the loop at line 9 can be avoided if we preprocess the value in a matrix.
 In order to get the number of recursion of \verb|skills_min_cost_aux| we can count the number of entries that are filled in $M$ because an entry is filled only one time when a new call is performed.
-The matrix size of $(|I|+1)*(2^K)$ so the total cost of \verb|skills_min_cost_aux| is $O(|I|*2^K*2^K*K) = O(|I|*2^\{2K\}*K)$.
-The final cost is so $O(K*(|I|+|tasks|) + |I|*2^\{2K\}*K) = O(2^\{2K\}*K*T + K*T + K*|tasks|)$. With $L = 2^K$ it is $O(L^2*log_2(L)*T + log_2(L)*(T+|tasks|))$ that is polynomial.
+The matrix size of $(|I|+1)*(2^K)$ so the total cost of \verb|skills_min_cost_aux| is $O(|I|*2^K*2^K*K) = O(|I|*2^{2K}*K)$.
+The final cost is so $O(K*(|I|+|tasks|) + |I|*2^{2K}*K) = O(2^{2K}*K*T + K*T + K*|tasks|)$. With $L = 2^K$ it is $O(L^2*log_2(L)*T + log_2(L)*(T+|tasks|))$ that is polynomial.
 
 To prove that the algorithm is correct we proceed by induction.
 
-% TODO
+In the base case $t = T-1$, we consider all the dispositions with repetitions. These dispositions are all the possible configurations of hired or freelance for each worker types. So after computing the cost for each configuration, we can get the best configuration getting the minimal cost.
+
+Now assume that at the iteration $t+1$ returns the minimum cost.
+For the case $t$ we are adding the cost of each configuration to the cost of the $t+1$ case using such a configuration. This implies that we return the cost of the best configuration that creates a sequence of minimum cost.
+
+So the minimum is always returned in every iteration.
 
 \bigskip
 \section*{Exercise 5}
@@ -821,11 +826,11 @@ algorithm $skills\_min\_cost2(I, s, C, S, K, tasks)$
     return $r$
 \end{pseudo}
 
-The cost of the body of the loop at line 3 is $O(|I|+|tasks|)$ whithout considering the call to \verb|min_cost_aux|.
+The cost of the body of the loop at line 3 is $O(|I|+|tasks|)$ without considering the call to \verb|min_cost_aux|.
 The cost of \verb|min_cost_aux| is $O(|I|)$ as shown in 4.1.
 This implies that the total cost of \verb|skills_min_cost2| is $K$ times the cost of the loop at line 3, $O(K*(2*|I|+|tasks|))$
 
-Can this formulation of the algorithm be correct? I would like to discuss few minutes about this question during the oral exam.
+Can this formulation of the algorithm be correct? I would like to discuss a few minutes about this question during the oral exam.
 
 \vfill
 \bibliography{main} 
