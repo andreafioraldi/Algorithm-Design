@@ -514,6 +514,7 @@ The final cost is so $O(K*(|I|+|tasks|) + |I|*2^\{2K\}*K) = O(2^\{2K\}*K*T + K*T
 
 To prove that the algorithm is correct we proceed by induction.
 
+% TODO
 
 \bigskip
 \section*{Exercise 5}
@@ -800,8 +801,33 @@ def mst_from_edge(G, e):
     
 \end{pycode}
 
-
 \newpage
+\subsection*{4.2 solution running K times 4.1}
+
+\begin{pseudo}
+algorithm $skills\_min\_cost2(I, s, C, S, K, tasks)$
+    $r := 0$
+    for $k = 0$ to $K$
+        $c :=$ new $Array(|I|)$
+        $j := 0$
+        foreach $t \in I$
+            $c_t = 0$
+            while $j < |tasks| \land (tasks_j)_0$ is $t$
+                if $(tasks_j)_{2+k}$ is $true$
+                    $c_t = c_t + (tasks_j)_1$
+                $j = j +1$
+        $M :=$ new $Matrix(|I|+1, 2)$
+        $r = r + min\_cost\_aux(0, |I|, s, C, S, c, 0, M)$
+    return $r$
+\end{pseudo}
+
+The cost of the body of the loop at line 3 is $O(|I|+|tasks|)$ whithout considering the call to \verb|min_cost_aux|.
+The cost of \verb|min_cost_aux| is $O(|I|)$ as shown in 4.1.
+This implies that the total cost of \verb|skills_min_cost2| is $K$ times the cost of the loop at line 3, $O(K*(2*|I|+|tasks|))$
+
+Can this formulation of the algorithm be correct? I would like to discuss few minutes about this question during the oral exam.
+
+\vfill
 \bibliography{main} 
 \bibliographystyle{ieeetr}
 
