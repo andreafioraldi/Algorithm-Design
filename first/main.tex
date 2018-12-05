@@ -372,7 +372,7 @@ Returning to $OPT(x, h)$, to the single cost of $j_t$ we must add the cost of th
 This can be traduced into an algorithm that explores all the possible configurations and so a brute-force. In order to gain a polynomial cost, we used the memorization of the results of $OPT(x, h)$.
 We can store the solutions in a matrix $M_{T+1,2}$ storing in the first column the values of $OPT(x, false)$ and in the second $OPT(x, true)$. Obviously the rows are related to the $x$, so encoding $false = 0$ and $true = 1$ we can get the return value of $OPT(x, h)$ with $\big(\big(M\big)_x\big)_h$. Note that the last row of $M$ is present in order to avoid to check if we are in the case $t = T-1$.
 
-The algorithm, \verb|min_cost|, is the following (tasks is an array of tuples (time instant, outsourcing cost), $T$ is a number but we must consider as input the time interval $I = \{0 ... T\}$):
+The algorithm, \verb|min_cost|, is the following (tasks is an array of tuples (time instant, outsourcing cost), $T$ is a number and we must consider as input the time interval $I = \{0 ... T\}$):
 
 \begin{pseudo}
 algorithm $min\_cost\_aux(t, T, s, C, S, c, h, M)$
@@ -394,8 +394,9 @@ algorithm $min\_cost(I, s, C, S, tasks)$
     $c_i = 0$ $\forall i \in I$
     $j := 0$
     foreach $t \in I$
-        while $j < size(tasks) \land (tasks_j)_0$ is $t$
+        while $j < |tasks| \land (tasks_j)_0$ is $t$
             $c_t = c_t + (tasks_j)_1$
+            $j = j +1$
     return $min\_cost\_aux(0, |I|, s, C, S, c, 0, M)$
 \end{pseudo}
 
@@ -447,7 +448,7 @@ We can solve the problem using a brute-force that do a recursion over all possib
 $h$ is an array of $K$ elements that associate the skill $k$ to a boolean representing if we have an hired worker with the skill $k$ or not.
 
 \[
-    pay(h, next, t) = \mathlarger{\sum}_{k \in \{0 ... K\}}
+    helper(h, next, t) = \mathlarger{\sum}_{k \in \{0 ... K\}}
     \begin{cases}
         s & \text{if } h_k = true \land next_k = true \\
         S + ((CM)_t)_k & \text{if } h_k = true \land next_k = false \\
@@ -457,55 +458,62 @@ $h$ is an array of $K$ elements that associate the skill $k$ to a boolean repres
 \]
 
 \[
-    OPT(t, h) = min\Bigg( OPT(t+1, next) + pay(h, next, t)  \text{ }\forall\text{ } next \in D'_{(2,T)}({true, false})\Bigg)
+    OPT(t, h) = min\Big\{ OPT(t+1, next) + helper(h, next, t)  \text{ }\forall\text{ } next \in D'_{(2,K)}({true, false})\Big\}
 \]
 
-We can memorize $OPT(t+1, next)$ in a matrix $M_{T,2^K}$ in order to gain a polynomial cost in function fo $2^K$.
+The cost of this recurrence is $(2^K)^K*T$. 
+We can memorize $OPT(t, next)$ in a matrix $M_{T,2^K}$ in order to gain a polynomial cost in function of $2^K$. The first dimension represents the time instants, the second the dispositions with repetitions in $D'_{(2,T)}({true, false})$ (always with $true=1$ and $false=0$).
 
-% TODO
-
-
-\begin{pseudo}
-algorithm $skills\_min\_cost\_aux(j, W, T, s, C, S, c)$
-    $r := 0$
-    for $t = 0$ to $T$
-        foreach $w \in W$
-            if not $(j_t)_w$
-                $c_{w,t} = 0$
-    foreach $w \in W$
-        $M :=$ new $Matrix(T+1, 2)$
-        $r = r + min\_cost\_aux(0, T, s_w, C_w, S_w, c_w, 0, M)$
-    return $r$
-\end{pseudo}
-
-
-In pseudocode (we directly associate a task $j_t$ wth the set $W_t$ to avoid ambiguity with $W$):
+In pseudocode (tasks is an array of tuples (time instant, outsourcing cost, has skill 1 ... has skill K) and $I = \{0 ... T\}$):
 
 \begin{pseudo}
-algorithm $min\_cost\_multi\_types(j, W, T, s, C, S, c)$
-    $r := 0$
-    for $t = 0$ to $T$
-        foreach $w \in W$
-            if not $(j_t)_w$
-                $c_{w,t} = 0$
-    foreach $w \in W$
-        $M :=$ new $Matrix(T+1, 2)$
-        $r = r + min\_cost\_aux(0, T, s_w, C_w, S_w, c_w, 0, M)$
-    return $r$
+algorithm $skills\_min\_cost\_aux(t, T, s, C, S, CM, h, M, K, disps)$
+    if $t$ is $T$
+        return $0$
+    $r := \{\}$
+    for $i = 0$ to $2^K$
+        if $((M)_{t+1})_i$ is $empty$
+            $((M)_{t+1})_i = skills\_min\_cost\_aux(t+1, T, s, C, S, CM, disps_i, M, K)$
+        $cost := ((M)_{t+1})_i$
+        for $k = 0$ to $K$
+            if $h_k = 1 \land (disps_i)_k = 1$
+                $cost = cost + s$
+            else if $h_k = 1 \land (disps_i)_k = 0$
+                $cost = cost + S + ((CM)_t)_k$
+            else if $h_k = 0 \land (disps_i)_k = 1$
+                $cost = cost + C + s$
+            else if $h_k = 0 \land (disps_i)_k = 0$
+                $cost = cost + ((CM)_t)_k$
+        $r = r \cup \{cost\}$
+    return $min(r)$
 \end{pseudo}
 
-The cost of the loop at line 4 is $k$, the cardinality of $|W|$.
-The outer for at lien 3 has $T$ iterations, so the total cost is $O(T*k)$.
-The cost of \verb|min_cost_aux| is $O(T)$ and it is inside a loop of $k$ iterations, so the cost of this second loop at line 7 is $O(k*T)$.
-This implies that the total cost of \verb|min_cost_multi_types| is $O(T*k) = O(|j|*|W|)$, so it is polynomial in function of the size of the two sets in the input.
-Considering the number $L = 2^k$ we can express the cost as $O(log_2(L)*T)$.
+\begin{pseudo}
+algorithm $skills\_min\_cost(I, s, C, S, K, tasks)$
+    $M :=$ new $Matrix(|I|+1, 2^K)$
+    $h := $ new $Array(K)$
+    $CM :=$ new $Matrix(|I|, K)$
+    $disps := dispositions\_with\_repetitions((true, false), K)$
+    for $k = 0$ to $K$
+        $h_k = 0$
+        $j := 0$
+        foreach $t \in I$
+            $((CM)_t)_k = 0$
+            while $j < |tasks| \land (tasks_j)_0$ is $t$
+                if $(tasks_j)_{2+k}$ is $true$
+                    $((CM)_t)_k = ((CM)_t)_k + (tasks_j)_1$
+                $j = j +1$
+    return $skills\_min\_cost\_aux(0, |I|, s, C, S, CM, h, M, K, disps)$
+\end{pseudo}
+
+The cost of the body of \verb|skills_min_cost| is $O(K*(|I|+|tasks|))$ (note that it is more or less $K$ time the loop in \verb|min_cost|).
+The cost of the body of \verb|skills_min_cost_aux| is $O(2^K*K)$ if we do not consider the recurive calls because we have a loop of $K$ iterations in a loop of $2^K$ iteration. Not that the loop at line 9 can be avoided if we preprocess the value in a matrix.
+In order to get the number of recursion of \verb|skills_min_cost_aux| we can count the number of entries that are filled in $M$ because an entry is filled only one time when a new call is performed.
+The matrix size of $(|I|+1)*(2^K)$ so the total cost of \verb|skills_min_cost_aux| is $O(|I|*2^K*2^K*K) = O(|I|*2^\{2K\}*K)$.
+The final cost is so $O(K*(|I|+|tasks|) + |I|*2^\{2K\}*K) = O(2^\{2K\}*K*T + K*T + K*|tasks|)$. With $L = 2^K$ it is $O(L^2*log_2(L)*T + log_2(L)*(T+|tasks|))$ that is polynomial.
 
 To prove that the algorithm is correct we proceed by induction.
 
-Base case is $k=1$: In that case \verb|min_cost_multi_types| is exactly \verb|min_cost|, so it is correct.
-Assume now that it is correct for the case $k = i$.
-In the case with $k = i+1$ we can see that we are adding a new type of worker to $W$.
-The types of workers are independent of each other, and adding the result of \verb|min_cost| using the type of worker $i+1$ to the total cost computed in the case $k=i$ we get the minimum cost.
 
 \bigskip
 \section*{Exercise 5}
