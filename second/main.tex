@@ -1,0 +1,340 @@
+% !TeX encoding = UTF-8
+% !TeX program = pdflatex
+
+%----------------------------------------------------------------------------------------
+%    PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}   % for \textcolor
+\usepackage{relsize}
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+%\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+%\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,amssymb} % Math packages
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\lstnewenvironment{pycode}[1][]{
+    \lstset{
+        language=python,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={self,as},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\lstnewenvironment{ccode}[1][]{
+    \lstset{
+        language=C,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\lstdefinelanguage{pseudocode}{
+    alsodigit = {-},
+    keywords = {algorithm,new,if,else,while,for,foreach,to,do,in,return,true,false,and,or,not,error,is,skip}
+}
+
+
+\lstnewenvironment{pseudo}[1][]{
+    \lstset{
+        language=pseudocode,
+        mathescape=true,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0},
+        keywordstyle=\bfseries,
+        stringstyle=\color{red}\ttfamily,
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\setcounter{secnumdepth}{0}
+
+\title{    
+\normalfont \normalsize 
+\textsc{Sapienza University of Rome} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Algorithm Design Second Homework \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Andrea Fioraldi 1692419} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section{Exercise 1}
+
+We redefine our problem as a problem on graphs. Let $G(M, F, E)$ a fully connected graph in which each friend is a node. Each edge $(u,v)$ as a cost $w(u,v) \geq 0$.
+We define the following functions:
+
+$deg(v, G) := \sum_{u \in G.M \cup G.F} w(v, u)$;
+
+$density(G) := \frac{1}{|C.M \cup G.F|}\sum_{v, u \in G.M \cup G.F} w(v, u)$;
+
+\begin{pseudo}
+algorithm $michele\_party\_approx(G)$
+    $n := |G.M \cup G.F|$
+    $H_n := G$
+    $max\_d := -1$
+    $s := -1$
+    for $i = \frac{n}{2}$ to $1$
+        $d := density(H_i)$
+        if $d > max\_d$
+            $max\_d = d$
+            $s = i$
+        $m := v \in H_i.M\text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i.M$
+        $f := v \in H_i.F\text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i.F$
+        $H_{i-1} = H_i \setminus \{m, f\}$
+    return $H_s$
+\end{pseudo}
+
+Let $OPT$ the optimal solution and $d_{OPT} = \frac{1}{|OPT|}\sum_{v, u \in OPT} w(v, u) = \frac{W}{N}$ its density. Let $m \in OPT \cap M$ and $f \in OPT \cap F$.
+
+Consider that $\frac{W}{N} \geq \frac{W-deg(m)-deg(f)}{N-2} \Leftrightarrow \frac{deg(m)+deg(f)}{N-2} \geq \frac{W}{N-2} - \frac{W}{N} \Leftrightarrow deg(m)+deg(f) \geq W - \frac{N-2}{N}*W = 2*\frac{W}{N}$.
+So in $OPT$ the sum of the degree of a generic $m$ and $f$ is at least twice $d_{OPT}$.
+
+\bigskip
+Consider the iteration $i$ of the algorithm in which for the first time two nodes $m \in OPT \cap M$ and $f \in OPT \cap F$ are removed. 
+In the remaining graph all the pairs $m \in H_{i-1} \cap M$ and $f \in H_{i-1} \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks tp $min(a,b) = min(a)+min(b)$ and the previous observation.
+In $H_{i-1}$ there are $\frac{|H_{i-1}|}{2}$ pairs that can be considered in the following iterations until $i = 1$. The total cost of the edges in $H_{i-1}$ is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2}$ (the division by 2 is due to the fact that we want to avoid to consider edges twice). The density is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2*|H_{i-1}|} = \frac{d_{OPT}}{2}$.
+Since the algorithm returns the graph with the highest density over all the iterations we have a solution with density at least $\frac{d_{OPT}}{2}$.
+We proved that $michele\_party\_approx$ is a 2-approximation.
+
+\section{Exercise 2}
+
+Let $A$ is the set of required skills. $S$ is the set of all the people available, each people is represented as a set of skills $S_j \subseteq A$. Let $n = |A|$.
+
+We can express the Set Cover with Redundancies problem using the following ILP formulation:
+
+\[
+    \begin{array}{ll}
+    min \mathlarger{\sum}_{S_j \in S} c_j*x_j & \\
+    \text{s.t.} \mathlarger{\sum}_{S_j | A_i \in S_j} x_j \geq 3 & \forall A_i \in A \\
+    x_j \in \{0, 1\} & \forall S_j \in S \\
+    \end{array}
+\]
+
+In order to build a randomized approximation consider the associated LP problem where $x^*_j \in [0, 1]$. The LP solution is a vector $x^*$ of real values.
+
+Consider the algorithm ALG in which each person $S_j$ is chosen randomly with probability $p_j = min(d*log(n)*x^*_j, 1)$ with all choices that are indepedent.
+We denote the vector of these choices as $x'$.
+
+Let $C_i = \sum_{S_j | A_i \in S_j} x'_j$ a random variable that represents the times that the skill $A_i$ is covered.
+The expectation of $C_i$ is $\E[C_i] = \E\Big[\sum_{S_j | A_i \in S_j} x'_j\Big] = \sum_{S_j | A_i \in S_j} p_j$.
+Then, $\E[C_i] = d*log(n)*\sum_{S_j | A_i \in S_j} x^*_j \geq d*log(n)*3$ because the cover constraint in LP is satisfied.
+
+From this, thanks to the Chernoff lower bound, follows that:
+
+$Pr\Big[C_i < 3\Big] = Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d*log(n)}\Big)\Big)*d*log(n)*3\Big] \leq Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d}\Big)\Big)*d*log(n)*3\Big] \leq exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$
+
+Note that $\Big(1 - \frac{d*log(n) -1}{d*log(n)}\Big)*d*log(n) = 1$. $0 < 1 - 1/d < 1$ must be valid in order apply Chernoff and so we have that $d > 1$.
+
+We have that the probability that the skill $A_i$ is covered more than 3 times is $Pr[C_i \geq 3] \geq 1 - exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
+
+%$\sum \E[x'_j] \leq \sum d*log(n)*c_j*x^*_j$. Using Markow inequality we can bound the objective function expected value $Pr[\sum x'_j \geq \sum 4*d*log(n)*x^*_j] \leq \frac{\sum d*log(n)*x^*_j}{\sum 4*d*log(n)*x^*_j} = \frac{1}{4}$.
+
+The probability that at least one $A_i$ is not covered 3 times is $Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] \leq \mathlarger{\sum}_{A_i \in A} Pr\Big[C_i < 3\Big] = n*exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
+
+The cost is $d*log(n)$ times the cost of LP. Increasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution.
+
+We bound the cost of the approximation using the Markow inequality: $Pr[\sum x'_j \geq \sum 4*d*log(n)*x^*_j] \leq \frac{\sum d*log(n)*x^*_j}{\sum 4*d*log(n)*x^*_j} = \frac{1}{4}$
+
+Choosing $d = 3$ we have an interesting result:
+
+$Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] = n*exp(-2*log(n)) = 1/n$
+
+The probability that all the skills are covered, so that $x'$ is feasible, is $1 - 1/n$ that is quite high and so we expect to need only a run to get a feasible solution.
+
+The cost of this approximation is at most $3*4*log(n)*LP$.
+
+The probability that the solution is feasible and that does not exceed the bound is $Pr\Big[\sum x'_j \leq \sum 4*d*log(n)*x^*_j \land \bigcup_{A_i \in A} C_i >= 3\Big] \geq (1 - \frac{1}{4})(1 - \frac{1}{n}) = 3/4 - 3/(4n)$.
+
+\section{Exercise 3}
+
+We denote as $F^*$ the optimal solution of the problem. $F^*$ is the minimum cost set of edges that if removed creates $k$ connected components with each target terminal $s_i$ inside each component.
+
+Let $F_i^* \subset F^*$ the set of edges that if removed separated the vertex $s_i$ from the other $s_j$ with $i \ne j$. We have that $\mathlarger{\cup}_{i = 0}^k F_i^* = F^*$.
+
+Each edge $e$ in $F^*$ is contained in two $F_i^*$ because it is incident at two connected components. So we can say that:
+
+\[
+\mathlarger{\sum}_{i = 0}^k \mathlarger{\sum}_{e \in F_i^*} w(e) = 2*\mathlarger{\sum}_{e \in F^*} w(e)
+\]
+
+Our algorithm returns $k$ min cuts $F_i$. By definition $F_i$ is the minimum set of edges that separates $s_i$ from the other $s_j$ with $i \ne j$ so we have that $\mathlarger{\sum}_{e \in F_i} w(e) \leq \mathlarger{\sum}_{e \in F_i^*} w(e)$.
+
+This implies that:
+
+\[
+\mathlarger{\sum}_{i = 0}^k \mathlarger{\sum}_{e \in F_i} w(e) \leq 2*\mathlarger{\sum}_{e \in F^*} w(e)
+\]
+
+And so, in the worst case, the cost of $F$ is twice the cost of $F^*$. We proved that this is a 2-approximation algorithm.
+
+\section{Exercise 4}
+
+Let $k$ an ordered multiset of genes $g \in G$ such that $g_1 || ... || g_j || ... || g_{|k|} = D \text{ with } g_j \in k$ ($||$ is the concatenation operator). $K$ is the set of all possible $k$.
+
+As instance, if $D = ACCA$ we can have $K = \{\{AC,CA\},\{ACC,A\}\}$ if $G = \{AC,CA,ACC,A\}$.
+
+Let the variables $x_i$ with $i = 1 ... m$ binary variables that represents if a gene $G_i \in G$ is in $D$. 
+
+Let $y_k$ $\forall k \in K$ a binary variable that tells if the multiset $k$ is used to form $D$.
+
+The ILP formulation is the following:
+
+\[
+    \begin{array}{lll}
+    & min \mathlarger{\sum}_{i = 1}^m w_i*x_i & \\
+    (1) & \mathlarger{\sum}_{k \in K | G_i \in k} y_k - x_i \leq 0 & \forall i \in \{1 ... m\} \\
+    (2) & \mathlarger{\sum}_{k \in K} y_k \geq 1 & \\
+    & x_i \in \{0, 1\} & \forall i \in \{1 ... m\} \\
+    & y_k \in \{0, 1\} & \forall k \in K
+    \end{array}
+\]
+
+$(1)$ means that if a gene $G_i$ is not taken all the $k$ that contains $G_i$ mus be excluded. $(2)$ means that at least one $k$ must be taken, and it is our solution that has minimum cost genes.
+
+Consider now the LP-relaxion with $x_i \geq 0 \land y_k \geq 0$. Let's compute the dual of it.
+In the dual, we have that the number of variables is the same of the number of constraints in the primal ($m+1$) and vice-versa the number of constraints is the number of variables in the primal ($m+|K|$).
+Only constraint $(2)$ contribute to the objective function (cfr. \cite{cap8roma}).
+
+When $G_i$ is used the index $i$ is always relative to $G$.
+
+\[
+    \begin{array}{ll}
+    max\text{ }u & \\
+    \mathlarger{\sum}_{G_i \in k} v_i - u \geq 0 & \forall k \in K \\
+    v_i \leq w_i & \forall i \in \{1 ... m\}\\
+    u \geq 0, v_i \geq 0 & \forall i \in \{1 ... m\}
+    \end{array}
+\]
+
+\clearpage
+\section{Exercise 5}
+
+\clearpage
+\section{Exercise 6}
+
+Let $h$ the position of Giorgio's home.
+Let $S(i) = Pr[Safe|x(t)=i]$ the probability that Giorgio goes to home safely when he is at position $i$. We know that $Pr[x(t+1) = x(t)+1] = p$ and $Pr[x(t+1) = x(t)-1] = 1-p$. Follows that:
+
+\[
+S(i) = \begin{cases}
+0 & \text{if }i = -1 \\
+1 & \text{if }i = h \\
+p*S(i-1) + (1-p)*S(i+1) & \text{otherwise} \\
+\end{cases}
+\]
+
+We have that in general $S(i) = p*S(i-1) + (1-p)*S(i+1)$ and $S(i) = p*S(i) + (1-p)*S(i)$ (from $1 = p - (1-p)$) and so $S(i+1) = \frac{p}{1-p}*\big(S(i) - S(i-1)\big) + S(i)$.
+Follows that $S(i+2) = \frac{p}{1-p}*\big(S(i+1) - S(i)\big) + S(i+1) = \frac{p}{1-p}\Big(\frac{p}{1-p}\big(S(i) - S(i-1)\big) + S(i) - S(i)\Big) + \frac{p}{1-p}*\big(S(i) - S(i-1)\big) + S(i)$.
+
+With $i = 0$ we have $S(2) = \big(\frac{p}{1-p})^2*S(0) + \frac{p}{1-p}*S(0) + S(0)$ and so clearly:
+
+\[
+S(i) = \sum_{j=0}^{i} \Big(\frac{p}{1-p}\Big)^j*S(0).
+\]
+
+Consider now when $i = h$. The problem says that Giorgio makes an infinite number of steps so we can set $h = +\infty$.
+\[
+1 = S(+\infty) = S(0)*\sum_{j=0}^{+\infty} \Big(\frac{p}{1-p}\Big)^j.
+\]
+This is a geometric series \cite{geo}. By definition if $|\frac{p}{1-p}| < 1$ it converges to $\frac{1}{1-\frac{p}{1-p}}$.
+
+The probability that Giorgio goes to the hospital from position 0 is $Pr[Hospital|x(t)=0] = 1 + Pr[Safe|x(t)=0] = 1 - S(0)$.
+
+$|\frac{p}{1-p}| < 1 \Leftrightarrow p < 1/2$ and so, finally, we have that:
+\[
+Pr[Hospital|x(t)=0] = 1 - \frac{1}{\sum_{j=0}^{+\infty} \big(\frac{p}{1-p}\big)^j} = \begin{cases}
+\frac{p}{1-p} & p < 1/2 \\
+1 & p \geq 1/2 \\
+\end{cases}
+\]
+
+Giorgio goes to hospital for sure when $p \geq \frac{1}{2}$ and goes to hospital with probability at most $\frac{1}{2}$ when $\frac{p}{1-p} \leq \frac{1}{2} \Rightarrow p \leq \frac{1}{3}$.
+
+\vfill
+\bibliography{main} 
+\bibliographystyle{ieeetr}
+
+\end{document}
