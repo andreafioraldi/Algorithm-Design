@@ -243,7 +243,7 @@ The cost of this approximation must be at most $3*k*log(n)*LP$.
 
 The probability that the solution is not feasible or that the cost exceed the bound is $Pr\Big[\E\big[\sum_{S_j \in S} c_j*x'_j\big] \geq \sum_{S_j \in S} k*d*log(n)*x^*_j \lor \bigcup_{A_i \in A} C_i < 3\Big] \leq \frac{1}{k} + \frac{1}{n}$.
 
-Setting $k = 2$ we get that such probability is a bit greater than $\frac{1}{2}$ and so the solution is feasible and with cost less than $6*log(n)*LP$ with probability a bit less than $\frac{1}{2}$ ($\frac{1}{2} - \frac{1}{2*n}$).
+Setting $k = 2$ we get that the solution is feasible and with cost less than $6*log(n)*LP$ with probability greater than $\frac{1}{2} - \frac{1}{2*n}$ that is amost $\frac{1}{2}$ with a reasonable $n$.
 We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have such number of repetitions.
 
 \section{Exercise 3}
@@ -311,27 +311,42 @@ When $G_i$ is used the index $i$ is always relative to $G$.
 
 The proposed problem is a finite zero-sum game theory problem.
 
-\bigskip
-\begin{tabular}{ | l | l | l | }
-    \hline
-    Comet, Dasher & Head & Tail \\ \hline
-    Head & 4, -4 & -1, 1 \\ \hline
-    Tail & -2, 2 & 2, -2 \\ \hline
-\end{tabular}
-\bigskip
+\begin{center}
+    \begin{tabular}{ | l | l | l | }
+        \hline
+        Comet, Dasher & Head & Tail \\ \hline
+        Head & 4, -4 & -1, 1 \\ \hline
+        Tail & -2, 2 & 2, -2 \\ \hline
+    \end{tabular}
+\end{center}
+
+We create a matrix $A_{2,2}$ associated to the previous table taking the first value of each table entry so that each entry of the matrix is the payoff for Comet and the cost for Dasher.
+We encode payoff/cost and mixed strategy as variables in a LP problem for each player:
 
 \[
     \begin{array}{lll}
     \text{Comet} & \text{  } & \text{Dasher} \\
-    max\text{ }y                & & max\text{ }v \\
-    4*x_1 - 2*x_2 \geq y    & & -4*u_1 + u_2 + v \leq v \\
-    -x_1 + 2*x_2 \geq y     & & 2*u_1 - 2*u_2 + v \leq v \\
+    max\text{ }y                & & min\text{ }v \\
+    4*x_1 - 2*x_2 \geq y    & & 4*u_1 - u_2 \leq v \\
+    -x_1 + 2*x_2 \geq y     & & -2*u_1 + 2*u_2 \leq v \\
     x_1 + x_2 = 1               & & u_1 + u_2 = 1 \\
     x_1 \geq 0, x_2 \geq 0      & & u_1 \geq 0, u_2 \geq 0 \\
     \end{array}
 \]
 
-\clearpage
+Comet wants to maximize the payoff choosing the mixed strategy $x$ in a way that no matter what Dhaser plays. Dasher wants to minimize the cost in the same way.
+Each problem is the dual of the other so $max\text{ }y = min\text{ }v = k$. This implies that this is a Mixed Nash Equilibrium with $k$ that is the value of the zero-sum game.
+
+Solving the two problems with a solver (see the \hyperref[ex5app]{Appendix} to know how) we have that $max\text{ }y = min\text{ }v = \frac{2}{3}$, $x_1 = \frac{4}{9}$, $x_2 = \frac{5}{9}$, $y_1 = \frac{1}{3}$, $x_2 = \frac{2}{3}$.
+Decoding the index of the variables to the strategies the result is that Santa will bias the coins with this probabilities:
+
+\[
+    \begin{array}{ll}
+    Pr[\text{Comet coin = Head}] = \frac{4}{9} & Pr[\text{Comet coin = Tail}] = \frac{5}{9} \\
+    Pr[\text{Dasher coin = Head}] = \frac{1}{3} & Pr[\text{Dasher coin = Tail}] = \frac{2}{3} \\
+    \end{array}
+\]
+
 \section{Exercise 6}
 
 Let $h$ the position of Giorgio's home.
@@ -381,24 +396,32 @@ Giorgio goes to hospital for sure when $p \geq \frac{1}{2}$ and goes to hospital
 Yes, AMPL+CPLEX should be used insted of Z3 but we do not like the AMPL syntax and in addition we use Z3 almost every day for SMT/SAT so...
 
 \bigskip
-Primal:
+Comet:
 \begin{verbatim}
-(declare-fun k () Real)
+(declare-fun y () Real)
 (declare-fun x2 () Real)
 (declare-fun x1 () Real)
-(assert (>= (- (* 4.0 x1) (* 2.0 x2)) k))
-(assert (>= (+ (- x1) (* 2.0 x2)) k))
+(assert (>= (- (* 4.0 x1) (* 2.0 x2)) y))
+(assert (>= (+ (- x1) (* 2.0 x2)) y))
 (assert (= (+ x1 x2) 1.0))
 (assert (>= x1 0.0))
 (assert (>= x2 0.0))
-(maximize k)
+(maximize y)
 (check-sat)
 \end{verbatim}
 
-\bigskip
-Dual:
+Dasher:
 \begin{verbatim}
-
+(declare-fun v () Real)
+(declare-fun y2 () Real)
+(declare-fun y1 () Real)
+(assert (<= (- (* 4.0 y1) y2) v))
+(assert (<= (+ (* (- 2.0) y1) (* 2.0 y2)) v))
+(assert (= (+ y1 y2) 1.0))
+(assert (>= y1 0.0))
+(assert (>= y2 0.0))
+(minimize v)
+(check-sat)
 \end{verbatim}
 
 
