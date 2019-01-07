@@ -174,12 +174,14 @@ So in $OPT$ the sum of the degree of a generic $m$ and $f$ is at least twice $d_
 
 \bigskip
 Consider the iteration $i$ of the algorithm in which for the first time two nodes $m \in OPT \cap M$ and $f \in OPT \cap F$ are removed. 
-In the remaining graph all the pairs $m \in H_{i-1} \cap M$ and $f \in H_{i-1} \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks tp $min(a,b) = min(a)+min(b)$ and the previous observation.
+In the remaining graph all the pairs $m \in H_{i-1} \cap M$ and $f \in H_{i-1} \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks to $min(a,b) = min(a)+min(b)$ and the previous observation.
 In $H_{i-1}$ there are $\frac{|H_{i-1}|}{2}$ pairs that can be considered in the following iterations until $i = 1$. The total cost of the edges in $H_{i-1}$ is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2}$ (the division by 2 is due to the fact that we want to avoid to consider edges twice). The density is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2*|H_{i-1}|} = \frac{d_{OPT}}{2}$.
 Since the algorithm returns the graph with the highest density over all the iterations we have a solution with density at least $\frac{d_{OPT}}{2}$.
 We proved that $michele\_party\_approx$ is a 2-approximation.
 
 \section{Exercise 2}
+
+Our solution was inspired by the Set Cover approximation proof described in \cite{wikiset} but follows the path of the proof shown during the class.
 
 Let $A$ is the set of required skills. $S$ is the set of all the people available, each people is represented as a set of skills $S_j \subseteq A$. Let $n = |A|$.
 
@@ -193,7 +195,7 @@ We can express the Set Cover with Redundancies problem using the following ILP f
     \end{array}
 \]
 
-In order to build a randomized approximation consider the associated LP problem where $x^*_j \in [0, 1]$. The LP solution is a vector $x^*$ of real values.
+In order to build a randomized approximation consider the associated LP relaxion where $x^*_j \in [0, 1]$. The LP solution is a vector $x^*$ of real values.
 
 Consider the algorithm ALG in which each person $S_j$ is chosen randomly with probability $p_j = min(d*log(n)*x^*_j, 1)$ with all choices that are indepedent.
 We denote the vector of these choices as $x'$.
@@ -204,7 +206,9 @@ Then, $\E[C_i] = d*log(n)*\sum_{S_j | A_i \in S_j} x^*_j \geq d*log(n)*3$ becaus
 
 From this, thanks to the Chernoff lower bound, follows that:
 
+\bigskip
 $Pr\Big[C_i < 3\Big] = Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d*log(n)}\Big)\Big)*d*log(n)*3\Big] \leq Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d}\Big)\Big)*d*log(n)*3\Big] \leq exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$
+\bigskip
 
 Note that $\Big(1 - \frac{d*log(n) -1}{d*log(n)}\Big)*d*log(n) = 1$. $0 < 1 - 1/d < 1$ must be valid in order apply Chernoff and so we have that $d > 1$.
 
@@ -214,9 +218,20 @@ We have that the probability that the skill $A_i$ is covered more than 3 times i
 
 The probability that at least one $A_i$ is not covered 3 times is $Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] \leq \mathlarger{\sum}_{A_i \in A} Pr\Big[C_i < 3\Big] = n*exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
 
-The cost is $d*log(n)$ times the cost of LP. Increasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution.
+Note that ncreasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution because over a treshold we have that all the variables in $x'$ are 1.
 
-We bound the cost of the approximation using the Markow inequality: $Pr[\sum x'_j \geq \sum 4*d*log(n)*x^*_j] \leq \frac{\sum d*log(n)*x^*_j}{\sum 4*d*log(n)*x^*_j} = \frac{1}{4}$
+The expected cost is $\E\big[\sum_{S_j \in S} c_j*x'_j\big] = \sum_{S_j \in S} c_j*\E[x'_j] = \sum_{S_j \in S} c_j*d*log(n)*x^*_j$ and so it is $d*log(n)$ times the cost of the LP.
+
+With the Markov inequality we bound with a parameter $k$ the probability to fail on having an average cost less than $k*d*log(n)$ times the cost of LP.
+
+\bigskip
+$Pr\Big[\sum_{S_j \in S} c_j*x'_j \geq k*d*log(n)*\sum_{S_j \in S} c_j*x^*_j\Big] \leq
+\frac{\mathlarger{\sum}_{S_j \in S} d*log(n)*c_j*x^*_j}{\mathlarger{\sum}_{S_j \in S} k*d*log(n)*c_j*x^*_j} = \frac{1}{k}$
+\bigskip
+
+Obviously this is an event that we want to avoid and setting a big $k$ help us in that but, on the contrary, give us also a worse approximation factor than $d*log(n)$.
+
+We must choose $d$ and $k$ in a way that maximize the probability that our solution is valid and the expected cost is in the bound and maximize the probability that such solution is minimal.
 
 Choosing $d = 3$ we have an interesting result:
 
@@ -224,9 +239,12 @@ $Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] = n*exp(-2*log(n)) = 1/n$
 
 The probability that all the skills are covered, so that $x'$ is feasible, is $1 - 1/n$ that is quite high and so we expect to need only a run to get a feasible solution.
 
-The cost of this approximation is at most $3*4*log(n)*LP$.
+The cost of this approximation must be at most $3*k*log(n)*LP$.
 
-The probability that the solution is feasible and that does not exceed the bound is $Pr\Big[\sum x'_j \leq \sum 4*d*log(n)*x^*_j \land \bigcup_{A_i \in A} C_i >= 3\Big] \geq (1 - \frac{1}{4})(1 - \frac{1}{n}) = 3/4 - 3/(4n)$.
+The probability that the solution is not feasible or that the cost exceed the bound is $Pr\Big[\E\big[\sum_{S_j \in S} c_j*x'_j\big] \geq \sum_{S_j \in S} k*d*log(n)*x^*_j \lor \bigcup_{A_i \in A} C_i < 3\Big] \leq \frac{1}{k} + \frac{1}{n}$.
+
+Setting $k = 2$ we get that such probability is a bit greater than $\frac{1}{2}$ and so the solution is feasible and with cost less than $6*log(n)*LP$ with probability a bit less than $\frac{1}{2}$ ($\frac{1}{2} - \frac{1}{2*n}$).
+We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have such number of repetitions.
 
 \section{Exercise 3}
 
@@ -289,8 +307,29 @@ When $G_i$ is used the index $i$ is always relative to $G$.
     \end{array}
 \]
 
-\clearpage
 \section{Exercise 5}
+
+The proposed problem is a finite zero-sum game theory problem.
+
+\bigskip
+\begin{tabular}{ | l | l | l | }
+    \hline
+    Comet, Dasher & Head & Tail \\ \hline
+    Head & 4, -4 & -1, 1 \\ \hline
+    Tail & -2, 2 & 2, -2 \\ \hline
+\end{tabular}
+\bigskip
+
+\[
+    \begin{array}{lll}
+    \text{Comet} & \text{  } & \text{Dasher} \\
+    max\text{ }y                & & max\text{ }v \\
+    4*x_1 - 2*x_2 \geq y    & & -4*u_1 + u_2 + v \leq v \\
+    -x_1 + 2*x_2 \geq y     & & 2*u_1 - 2*u_2 + v \leq v \\
+    x_1 + x_2 = 1               & & u_1 + u_2 = 1 \\
+    x_1 \geq 0, x_2 \geq 0      & & u_1 \geq 0, u_2 \geq 0 \\
+    \end{array}
+\]
 
 \clearpage
 \section{Exercise 6}
@@ -332,6 +371,36 @@ Pr[Hospital|x(t)=0] = 1 - \frac{1}{\sum_{j=0}^{+\infty} \big(\frac{p}{1-p}\big)^
 \]
 
 Giorgio goes to hospital for sure when $p \geq \frac{1}{2}$ and goes to hospital with probability at most $\frac{1}{2}$ when $\frac{p}{1-p} \leq \frac{1}{2} \Rightarrow p \leq \frac{1}{3}$.
+
+\newpage
+\section*{Appendix}
+
+\subsection*{Exercise 5}
+\label{ex5app}
+
+Yes, AMPL+CPLEX should be used insted of Z3 but we do not like the AMPL syntax and in addition we use Z3 almost every day for SMT/SAT so...
+
+\bigskip
+Primal:
+\begin{verbatim}
+(declare-fun k () Real)
+(declare-fun x2 () Real)
+(declare-fun x1 () Real)
+(assert (>= (- (* 4.0 x1) (* 2.0 x2)) k))
+(assert (>= (+ (- x1) (* 2.0 x2)) k))
+(assert (= (+ x1 x2) 1.0))
+(assert (>= x1 0.0))
+(assert (>= x2 0.0))
+(maximize k)
+(check-sat)
+\end{verbatim}
+
+\bigskip
+Dual:
+\begin{verbatim}
+
+\end{verbatim}
+
 
 \vfill
 \bibliography{main} 
