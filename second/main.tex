@@ -179,6 +179,8 @@ In $H_{i-1}$ there are $\frac{|H_{i-1}|}{2}$ pairs that can be considered in the
 Since the algorithm returns the graph with the highest density over all the iterations we have a solution with density at least $\frac{d_{OPT}}{2}$.
 We proved that $michele\_party\_approx$ is a 2-approximation.
 
+The cost is $O(n^3)$ because the most expensive operation in the body of the loop is the density that cost $|E|=n^2$.
+
 \section{Exercise 2}
 
 Our solution was inspired by the Set Cover approximation proof described in \cite{wikiset} but follows the path of the proof shown during the class.
