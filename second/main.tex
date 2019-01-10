@@ -174,8 +174,8 @@ So in $OPT$ the sum of the degree of a generic $m$ and $f$ is at least twice $d_
 
 \bigskip
 Consider the iteration $i$ of the algorithm in which for the first time two nodes $m \in OPT \cap M$ and $f \in OPT \cap F$ are removed. 
-In the remaining graph all the pairs $m \in H_{i-1} \cap M$ and $f \in H_{i-1} \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks to $min(a,b) = min(a)+min(b)$ and the previous observation.
-In $H_{i-1}$ there are $\frac{|H_{i-1}|}{2}$ pairs that can be considered in the following iterations until $i = 1$. The total cost of the edges in $H_{i-1}$ is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2}$ (the division by 2 is due to the fact that we want to avoid to consider edges twice). The density is greater than $\frac{2*d_{OPT}*\frac{|H_{i-1}|}{2}}{2*|H_{i-1}|} = \frac{d_{OPT}}{2}$.
+In the $H_i$ graph all the pairs $m \in H_i \cap M$ and $f \in H_i \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks to the fact that we are going to remove nodes (so with minimual sum of degrees) in which the previous observation holds.
+In $H_i$ there are $\frac{|H_i|}{2}$ pairs that will be removed until $i = 1$. There couples does not share nodes. The total cost of the edges in $H_i$ is greater than $\Big(2*d_{OPT}*\frac{|H_i|}{2}\Big)/2$ (the division by 2 is due to the fact that we want to avoid to consider edges twice). So we have that the density is greater than $\frac{2*d_{OPT}*\frac{|H_i|}{2}}{2*|H_i|} = \frac{d_{OPT}}{2}$.
 Since the algorithm returns the graph with the highest density over all the iterations we have a solution with density at least $\frac{d_{OPT}}{2}$.
 We proved that $michele\_party\_approx$ is a 2-approximation.
 
