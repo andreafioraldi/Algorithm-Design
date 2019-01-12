@@ -220,11 +220,11 @@ We have that the probability that the skill $A_i$ is covered more than 3 times i
 
 The probability that at least one $A_i$ is not covered 3 times is $Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] \leq \mathlarger{\sum}_{A_i \in A} Pr\Big[C_i < 3\Big] = n*exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
 
-Note that ncreasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution because over a treshold we have that all the variables in $x'$ are 1.
+Note that increasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution because over a threshold we have that all the variables in $x'$ are 1.
 
 The expected cost is $\E\big[\sum_{S_j \in S} c_j*x'_j\big] = \sum_{S_j \in S} c_j*\E[x'_j] = \sum_{S_j \in S} c_j*d*log(n)*x^*_j$ and so it is $d*log(n)$ times the cost of the LP.
 
-With the Markov inequality we bound with a parameter $k$ the probability to fail on having an average cost less than $k*d*log(n)$ times the cost of LP.
+With the Markov inequality, we bound with a parameter $k$ the probability to fail on having an average cost of less than $k*d*log(n)$ times the cost of LP.
 
 \bigskip
 $Pr\Big[\sum_{S_j \in S} c_j*x'_j \geq k*d*log(n)*\sum_{S_j \in S} c_j*x^*_j\Big] \leq
@@ -233,7 +233,7 @@ $Pr\Big[\sum_{S_j \in S} c_j*x'_j \geq k*d*log(n)*\sum_{S_j \in S} c_j*x^*_j\Big
 
 Obviously this is an event that we want to avoid and setting a big $k$ help us in that but, on the contrary, give us also a worse approximation factor than $d*log(n)$.
 
-We must choose $d$ and $k$ in a way that maximize the probability that our solution is valid and the expected cost is in the bound and maximize the probability that such solution is minimal.
+We must choose $d$ and $k$ in a way that maximizes the probability that our solution is valid and the expected cost is in the bound and maximize the probability that this solution is minimal.
 
 Choosing $d = 3$ we have an interesting result:
 
@@ -246,7 +246,7 @@ The cost of this approximation must be at most $3*k*log(n)*LP$.
 The probability that the solution is not feasible or that the cost exceed the bound is $Pr\Big[\E\big[\sum_{S_j \in S} c_j*x'_j\big] \geq \sum_{S_j \in S} k*d*log(n)*x^*_j \lor \bigcup_{A_i \in A} C_i < 3\Big] \leq \frac{1}{k} + \frac{1}{n}$.
 
 Setting $k = 2$ we get that the solution is feasible and with cost less than $6*log(n)*LP$ with probability greater than $\frac{1}{2} - \frac{1}{2*n}$ that is amost $\frac{1}{2}$ with a reasonable $n$.
-We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have such number of repetitions.
+We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have this a number of repetitions.
 
 \section{Exercise 3}
 
@@ -311,7 +311,7 @@ When $G_i$ is used the index $i$ is always relative to $G$ and when we use $G_i 
 
 \section{Exercise 5}
 
-The proposed problem is a finite zero-sum game theory problem.
+The proposed problem looks like a finite zero-sum game theory problem.
 
 \begin{center}
     \begin{tabular}{ | l | l | l | }
@@ -322,32 +322,26 @@ The proposed problem is a finite zero-sum game theory problem.
     \end{tabular}
 \end{center}
 
-We create a matrix $A_{2,2}$ associated to the previous table taking the first value of each table entry so that each entry of the matrix is the payoff for Comet and the cost for Dasher.
-We encode payoff/cost and mixed strategy as variables in a LP problem for each player:
+We create the Comet's payoff matrix $A_{2,2}$ taking the first value of each table. The matrix $B_{2,2} = -A$, on the other hand, is the payoff matrix for Dasher.
+Santa must assign the probability to get head or tail for each coin in order to convince both Comet and Dasher to play.
+To do that the game the game must not be balanced against either player and so we equal the expected payoff of the two players in order to make the game fair.
 
 \[
-    \begin{array}{lll}
-    \text{Comet} & \text{  } & \text{Dasher} \\
-    max\text{ }y                & & min\text{ }v \\
-    4*x_1 - 2*x_2 \geq y    & & 4*u_1 - u_2 \leq v \\
-    -x_1 + 2*x_2 \geq y     & & -2*u_1 + 2*u_2 \leq v \\
-    x_1 + x_2 = 1               & & u_1 + u_2 = 1 \\
-    x_1 \geq 0, x_2 \geq 0      & & u_1 \geq 0, u_2 \geq 0 \\
-    \end{array}
+\begin{array}{lll}
+    Pr[\text{Comet coins is head}] = p_h & Pr[\text{Comet coins is tail}] = p_t & p = \begin{pmatrix} p_h \\ p_t \end{pmatrix} = \begin{pmatrix} p_h \\ 1 - p_h \end{pmatrix} \\
+    Pr[\text{Dasher coins is head}] = q_h & Pr[\text{Dasher coins is tail}] = q_t & q = \begin{pmatrix} q_h \\ q_t \end{pmatrix} = \begin{pmatrix} q_h \\ 1 - q_h \end{pmatrix} 
+\end{array}
 \]
 
-Comet wants to maximize the payoff choosing the mixed strategy $x$ in a way that no matter what Dhaser plays. Dasher wants to minimize the cost in the same way.
-Each problem is the dual of the other so $max\text{ }y = min\text{ }v = k$. This implies that this is a Mixed Nash Equilibrium with $k$ that is the value of the zero-sum game.
+The expected payoff of Comet is $p^T*A*q$ and the expected payoff of Dasher is $p^T*B*q = -p^T*A*q$. When they are equal we have that $2*p^T*A*q=0$ and so $p^T*A*q=0$ is out constraint in order to have a fair game.
 
-Solving the two problems with a solver (see the \hyperref[ex5app]{Appendix} to know how) we have that $max\text{ }y = min\text{ }v = \frac{2}{3}$, $x_1 = \frac{4}{9}$, $x_2 = \frac{5}{9}$, $y_1 = \frac{1}{3}$, $x_2 = \frac{2}{3}$.
-Decoding the index of the variables to the strategies the result is that Santa will bias the coins with this probabilities:
+\bigskip
+$\begin{pmatrix} p_h & 1 - p_h \end{pmatrix}*\begin{pmatrix} 4 & -1 \\ -2 & 2 \end{pmatrix}*\begin{pmatrix} q_h \\ 1 - q_h \end{pmatrix} = \begin{pmatrix} p_h & 1 - p_h \end{pmatrix}*\begin{pmatrix} 5*q_h -1 \\ -4*q_h +2 \end{pmatrix} = p_h*(5*q_h -1) + (1-p_h)*(-4*q_h +2) = 9*p_h*q_h -3*p_h -4*q_h +2$
+\bigskip
 
-\[
-    \begin{array}{ll}
-    Pr[\text{Comet coin = Head}] = \frac{4}{9} & Pr[\text{Comet coin = Tail}] = \frac{5}{9} \\
-    Pr[\text{Dasher coin = Head}] = \frac{1}{3} & Pr[\text{Dasher coin = Tail}] = \frac{2}{3} \\
-    \end{array}
-\]
+$9*p_h*q_h -3*p_h -4*q_h +2 = 0$ with $p_h, q_h \in [0,1]$ is the constraint that give to santa a method how to select the probabilities in order to havea fair game.
+
+Note that this equation is a piece of an hyperbola. A valid solution is, as instance, $p_h = 1 \land p_t = 0 \land q_h = \frac{1}{5} \land q_t = \frac{4}{5}$.
 
 \section{Exercise 6}
 
@@ -388,43 +382,6 @@ Pr[Hospital|x(t)=0] = 1 - \frac{1}{\sum_{j=0}^{+\infty} \big(\frac{p}{1-p}\big)^
 \]
 
 Giorgio goes to hospital for sure when $p \geq \frac{1}{2}$ and goes to hospital with probability at most $\frac{1}{2}$ when $\frac{p}{1-p} \leq \frac{1}{2} \Rightarrow p \leq \frac{1}{3}$.
-
-\newpage
-\section*{Appendix}
-
-\subsection*{Exercise 5}
-\label{ex5app}
-
-Yes, AMPL+CPLEX should be used insted of Z3 but we do not like the AMPL syntax and in addition we use Z3 almost every day for SMT/SAT so...
-
-\bigskip
-Comet:
-\begin{verbatim}
-(declare-fun y () Real)
-(declare-fun x2 () Real)
-(declare-fun x1 () Real)
-(assert (>= (- (* 4.0 x1) (* 2.0 x2)) y))
-(assert (>= (+ (- x1) (* 2.0 x2)) y))
-(assert (= (+ x1 x2) 1.0))
-(assert (>= x1 0.0))
-(assert (>= x2 0.0))
-(maximize y)
-(check-sat)
-\end{verbatim}
-
-Dasher:
-\begin{verbatim}
-(declare-fun v () Real)
-(declare-fun y2 () Real)
-(declare-fun y1 () Real)
-(assert (<= (- (* 4.0 y1) y2) v))
-(assert (<= (+ (* (- 2.0) y1) (* 2.0 y2)) v))
-(assert (= (+ y1 y2) 1.0))
-(assert (>= y1 0.0))
-(assert (>= y2 0.0))
-(minimize v)
-(check-sat)
-\end{verbatim}
 
 
 \vfill
