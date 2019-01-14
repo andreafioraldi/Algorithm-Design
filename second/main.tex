@@ -125,9 +125,10 @@
 
 \setcounter{secnumdepth}{0}
 
-\title{    
+\title{
 \normalfont \normalsize 
 \textsc{Sapienza University of Rome} \\ [25pt] % Your university, school and/or department name(s)
+\vspace*{60px}
 \horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
 \huge Algorithm Design Second Homework \\ % The assignment title
 \horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
@@ -141,6 +142,7 @@
 
 \maketitle % Print the title
 
+\newpage
 \section{Exercise 1}
 
 We redefine our problem as a problem on graphs. Let $G(M, F, E)$ a fully connected graph in which each friend is a node. Each edge $(u,v)$ as a cost $w(u,v) \geq 0$.
@@ -181,6 +183,7 @@ We proved that $michele\_party\_approx$ is a 2-approximation.
 
 The cost is $O(n^3)$ because the most expensive operation in the body of the loop is the density that cost $|E|=n^2$.
 
+\newpage
 \section{Exercise 2}
 
 Our solution was inspired by the Set Cover approximation proof described in \cite{wikiset} but follows the path of the proof shown during the class.
@@ -191,8 +194,8 @@ We can express the Set Cover with Redundancies problem using the following ILP f
 
 \[
     \begin{array}{ll}
-    min \mathlarger{\sum}_{S_j \in S} c_j*x_j & \\
-    \text{s.t.} \mathlarger{\sum}_{S_j | A_i \in S_j} x_j \geq 3 & \forall A_i \in A \\
+    \min \mathlarger{\sum}_{S_j \in S} c_j*x_j & \text{s.t.} \\
+    \mathlarger{\sum}_{S_j | A_i \in S_j} x_j \geq 3 & \forall A_i \in A \\
     x_j \in \{0, 1\} & \forall S_j \in S \\
     \end{array}
 \]
@@ -248,6 +251,7 @@ The probability that the solution is not feasible or that the cost exceed the bo
 Setting $k = 2$ we get that the solution is feasible and with cost less than $6*log(n)*LP$ with probability greater than $\frac{1}{2} - \frac{1}{2*n}$ that is amost $\frac{1}{2}$ with a reasonable $n$.
 We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have this a number of repetitions.
 
+\newpage
 \section{Exercise 3}
 
 We denote as $F^*$ the optimal solution of the problem. $F^*$ is the minimum cost set of edges that if removed creates $k$ connected components with each target terminal $s_i$ inside each component.
@@ -270,45 +274,43 @@ This implies that:
 
 And so, in the worst case, the cost of $F$ is twice the cost of $F^*$. We proved that this is a 2-approximation algorithm.
 
+\newpage
 \section{Exercise 4}
 
-Let $k$ an ordered multiset of genes $g \in G$ such that $g_1 || ... || g_j || ... || g_{|k|} = D \text{ with } g_j \in k$ ($||$ is the concatenation operator). $K$ is the set of all possible $k$.
+Let $n = |D|$. Let $sub(D,i,j)$ the substring of $D$ from $i$ to $j-1$. As described in \cite{chris} we define a directed graph with $V = \{0, ..., n\}$ (the set of the indexes of the nucleobases in $D$) and $E = \{(i,j) \subset V^2| i < j \land sub(D,i,j) \in G\}$. A path from node $0$ to $n$ in this graph is a concatenation of genes that results in $D$. $\delta^-(v)$ is the set of incoming edges to node $v$ and $\delta^+(v)$ the outcoming edges. 
 
-As instance, if $D = ACCA$ we can have $K = \{\{AC,CA\},\{ACC,A\}\}$ if $G = \{AC,CA,ACC,A\}$.
-
-Let the variables $x_i$ with $i = 1 ... m$ binary variables that represents if a gene $G_i \in G$ is in $D$. 
-
-Let $y_k$ $\forall k \in K$ a binary variable that tells if the multiset $k$ is used to form $D$.
+The variables $x_k$ represents if a gene $G_k \in G$ is in $D$.
+The variables $z_{i,j}$ represents if an edge $(i,j)$ is in the optimal path.
 
 The ILP formulation is the following:
 
 \[
     \begin{array}{lll}
-    & min \mathlarger{\sum}_{i = 1}^m w_i*x_i & \\
-    (1) & \mathlarger{\sum}_{k \in K | G_i \in k} y_k - x_i \leq 0 & \forall i \in \{1 ... m\} \\
-    (2) & \mathlarger{\sum}_{k \in K} y_k \geq 1 & \\
-    & x_i \in \{0, 1\} & \forall i \in \{1 ... m\} \\
-    & y_k \in \{0, 1\} & \forall k \in K
+    & \min \mathlarger{\sum}_{k = 1}^m w_k*x_k & \text{s.t.}\\
+    (1) & x_{k|G_k = sub(D,i,j)} - z_{i,j} \geq 0 & \forall (i,j) \in E\\
+    (2) & \mathlarger{\sum}_{(i,j) \in \delta^+(0)} z_{i,j} = 1 & \\
+    (3) & \mathlarger{\sum}_{(i,j) \in \delta^-(v)} z_{i,j} - \mathlarger{\sum}_{(i,j) \in \delta^+(v)} z_{i,j} = 0 & \forall v \in V \setminus \{0,n\}\\
+    & x_k, z_{i,j} \in \{0,1\} & \\
     \end{array}
 \]
 
-$(1)$ means that if a gene $G_i$ is not taken all the $k$ that contains $G_i$ mus be excluded. $(2)$ means that at least one $k$ must be taken, and it is our solution that has minimum cost genes.
+$(1)$ is to force to consider a gene if a substring equal to the gene is taken. $(2)$ and $(3)$ are for the flow integrity.
 
-Consider now the LP-relaxion with $x_i \geq 0 \land y_k \geq 0$. Let's compute the dual of it.
-In the dual, we have that the number of variables is the same of the number of constraints in the primal ($m+1$) and vice-versa the number of constraints is the number of variables in the primal ($m+|K|$).
-Only constraint $(2)$ contribute to the objective function (cfr. \cite{cap8roma}).
-
-When $G_i$ is used the index $i$ is always relative to $G$ and when we use $G_i \in k$ we are considering all the distinct genes in $k$.
+Consider now the LP-relaxion with $x_k, z_{i,j} \geq 0$. Let's compute the dual of it.
+We associate varibales and constraints as follows: $(1) \rightarrow q_{i,j}, (2) \rightarrow p_0, (3) \rightarrow p_v \text{ with } v \in V \setminus \{0,n\}, x_k \rightarrow (4), z_{i,j} \rightarrow (5)$.
+The $A$ matrix of the primal has dimension $(n+|E|)\times(m+|E|)$. Considering the fact that and edge $(i,j)$ can be only in a $\delta^-(v)$ and only in a $\delta^+(v)$ we can easily compute $A^T$.
+Only constraint $(2)$ contribute to the objective function and only $q$ is sign constrained (cfr. \cite{cap8roma}).
 
 \[
-    \begin{array}{ll}
-    max\text{ }u & \\
-    \mathlarger{\sum}_{G_i \in k} v_i - u \geq 0 & \forall k \in K \\
-    v_i \leq w_i & \forall i \in \{1 ... m\}\\
-    u \geq 0, v_i \geq 0 & \forall i \in \{1 ... m\}
+    \begin{array}{lll}
+    & \max p_0 & \text{s.t.} \\
+    (4) & \mathlarger{\sum}_{i,j | sub(D,i,j)=G_k} q_{i,j} \leq w_k & \forall k \in \{1,...,m\}\\
+    (5) & -q_{i,j} +p_i -p_j \leq 0 & \forall (i,j) \in E\\
+    & q_{i,j} \geq 0 & \\
     \end{array}
 \]
 
+\newpage
 \section{Exercise 5}
 
 The proposed problem looks like a finite zero-sum game theory problem.
@@ -343,6 +345,7 @@ $9*p_h*q_h -3*p_h -4*q_h +2 = 0$ with $p_h, q_h \in [0,1]$ is the constraint tha
 
 Note that this equation is a piece of an hyperbola. A valid solution is, as instance, $p_h = 1 \land p_t = 0 \land q_h = \frac{1}{5} \land q_t = \frac{4}{5}$.
 
+\newpage
 \section{Exercise 6}
 
 Let $h$ the position of Giorgio's home.
