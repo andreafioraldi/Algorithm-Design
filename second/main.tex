@@ -145,16 +145,16 @@
 \newpage
 \section{Exercise 1}
 
-We redefine our problem as a problem on graphs. Let $G(M, F, E)$ a fully connected graph in which each friend is a node. Each edge $(u,v)$ as a cost $w(u,v) \geq 0$.
+We redefine our problem as a problem on graphs. Let $G(M, F, E)$ a fully connected graph in which each friend is a node. Each edge $(u,v)$ has a cost $w(u,v) \geq 0$.
 We define the following functions:
 
-$deg(v, G) := \sum_{u \in G.M \cup G.F} w(v, u)$;
-
-$density(G) := \frac{1}{|C.M \cup G.F|}\sum_{v, u \in G.M \cup G.F} w(v, u)$;
+\bigskip
+$deg(v, G) := \sum_{u \in G(M) \cup G(F)} w(v, u)$ \hfill $density(G) := \frac{1}{|G(M) \cup G(F)|}\sum_{v, u \in G(E)} w(v, u)$
+\bigskip
 
 \begin{pseudo}
 algorithm $michele\_party\_approx(G)$
-    $n := |G.M \cup G.F|$
+    $n := |G(M) \cup G(F)|$
     $H_n := G$
     $max\_d := -1$
     $s := -1$
@@ -163,25 +163,32 @@ algorithm $michele\_party\_approx(G)$
         if $d > max\_d$
             $max\_d = d$
             $s = i$
-        $m := v \in H_i.M\text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i.M$
-        $f := v \in H_i.F\text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i.F$
+        $m := v \in H_i(M) \text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i(M)$
+        $f := v \in H_i(F) \text{ }|\text{ }deg(v, H_i) \leq deg(u, H_i)\text{ }\forall u \in H_i(F)$
         $H_{i-1} = H_i \setminus \{m, f\}$
     return $H_s$
 \end{pseudo}
 
-Let $OPT$ the optimal solution and $d_{OPT} = \frac{1}{|OPT|}\sum_{v, u \in OPT} w(v, u) = \frac{W}{N}$ its density. Let $m \in OPT \cap M$ and $f \in OPT \cap F$.
+Let $OPT$ the optimal solution and $d_{OPT} = density(OPT) = \frac{\alpha}{\beta}$ its density ($\beta$ is the number of nodes). Let $m \in OPT(M)$ and $f \in OPT(F)$.
 
-Consider that $\frac{W}{N} \geq \frac{W-deg(m)-deg(f)}{N-2} \Leftrightarrow \frac{deg(m)+deg(f)}{N-2} \geq \frac{W}{N-2} - \frac{W}{N} \Leftrightarrow deg(m)+deg(f) \geq W - \frac{N-2}{N}*W = 2*\frac{W}{N}$.
+Consider that $\frac{\alpha}{\beta} \geq \frac{\alpha-deg(m)-deg(f)}{\beta-2} \Leftrightarrow \frac{deg(m)+deg(f)}{\beta-2} \geq \frac{\alpha}{\beta-2} - \frac{\alpha}{\beta} \Leftrightarrow deg(m)+deg(f) \geq \alpha - \frac{\beta-2}{\beta}*\alpha = 2*\frac{\alpha}{\beta}$.
 So in $OPT$ the sum of the degree of a generic $m$ and $f$ is at least twice $d_{OPT}$.
 
 \bigskip
-Consider the iteration $i$ of the algorithm in which for the first time two nodes $m \in OPT \cap M$ and $f \in OPT \cap F$ are removed. 
-In the $H_i$ graph all the pairs $m \in H_i \cap M$ and $f \in H_i \cap F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks to the fact that we are going to remove nodes (so with minimual sum of degrees) in which the previous observation holds.
-In $H_i$ there are $\frac{|H_i|}{2}$ pairs that will be removed until $i = 1$. There couples does not share nodes. The total cost of the edges in $H_i$ is greater than $\Big(2*d_{OPT}*\frac{|H_i|}{2}\Big)/2$ (the division by 2 is due to the fact that we want to avoid to consider edges twice). So we have that the density is greater than $\frac{2*d_{OPT}*\frac{|H_i|}{2}}{2*|H_i|} = \frac{d_{OPT}}{2}$.
+Consider the iteration $i$ of the algorithm in which for the first time two nodes $m \in OPT(M)$ and $f \in OPT(F)$ are removed. 
+In the $H_i$ graph all the pairs $m \in H_i(M)$ and $f \in H_i(F)F$ have $deg(m)+deg(f) \geq 2*d_{OPT}$ thanks to the fact that we are going to remove nodes with minimual sum of degrees in which the previous observation holds.
+In $H_i$ there are $\frac{|H_i(M) \cup H_i(F)|}{2}$ pairs that will be removed until $i = 1$. These couples does not share nodes. The total cost of the edges in $H_i$ is greater than $\Big(2*d_{OPT}*\frac{|H_i(M) \cup H_i(F)|}{2}\Big)/2$ (the division by 2 is due to the fact that we want to avoid to consider edges twice).
+
+So we have that
+
+\[
+density(H_i) \geq frac{2*d_{OPT}*\frac{|H_i(M) \cup H_i(F)|}{2}}{2*|H_i(M) \cup H_i(F)|} = \frac{d_{OPT}}{2}
+\]
+
 Since the algorithm returns the graph with the highest density over all the iterations we have a solution with density at least $\frac{d_{OPT}}{2}$.
 We proved that $michele\_party\_approx$ is a 2-approximation.
 
-The cost is $O(n^3)$ because the most expensive operation in the body of the loop is the density that cost $|E|=n^2$.
+The cost is $O(n^3)$ because the most expensive operation in the body of the loop is the density that costs $|G(E)|=n^2$.
 
 \newpage
 \section{Exercise 2}
@@ -212,16 +219,23 @@ Then, $\E[C_i] = d*log(n)*\sum_{S_j | A_i \in S_j} x^*_j \geq d*log(n)*3$ becaus
 From this, thanks to the Chernoff lower bound, follows that:
 
 \bigskip
-$Pr\Big[C_i < 3\Big] = Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d*log(n)}\Big)\Big)*d*log(n)*3\Big] \leq Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d}\Big)\Big)*d*log(n)*3\Big] \leq exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$
+$Pr\Big[C_i < 3\Big] = Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d*log(n)}\Big)\Big)*d*log(n)*3\Big] \leq$\footnote{This is done to get a result of the type $exp(W*log(n)) = n^W$} $Pr\Big[C_i < \Big(1 - \Big(1 - \frac{1}{d}\Big)\Big)*d*log(n)*3\Big] \leq \exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$
 \bigskip
 
 Note that $\Big(1 - \frac{d*log(n) -1}{d*log(n)}\Big)*d*log(n) = 1$. $0 < 1 - 1/d < 1$ must be valid in order apply Chernoff and so we have that $d > 1$.
 
-We have that the probability that the skill $A_i$ is covered more than 3 times is $Pr[C_i \geq 3] \geq 1 - exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
+%We have that the probability that the skill $A_i$ is covered more than 3 times is
+
+%\[
+%Pr[C_i \geq 3] \geq 1 - \exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)
+%\]
 
 %$\sum \E[x'_j] \leq \sum d*log(n)*c_j*x^*_j$. Using Markow inequality we can bound the objective function expected value $Pr[\sum x'_j \geq \sum 4*d*log(n)*x^*_j] \leq \frac{\sum d*log(n)*x^*_j}{\sum 4*d*log(n)*x^*_j} = \frac{1}{4}$.
 
-The probability that at least one $A_i$ is not covered 3 times is $Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] \leq \mathlarger{\sum}_{A_i \in A} Pr\Big[C_i < 3\Big] = n*exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)$.
+Thanks to the Union bound we can get the probability that at least one $A_i$ is not covered 3 times.
+\[
+Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] \leq \mathlarger{\sum}_{A_i \in A} Pr\Big[C_i < 3\Big] = n*\exp\bigg(-\frac{1}{2}*3*d*log(n)*\Big(1 - \frac{1}{d}\Big)^2\bigg)
+\]
 
 Note that increasing $d$ give us a better probability that all skills are covered but also, on the other hand, decrease the probability to have a minimal solution because over a threshold we have that all the variables in $x'$ are 1.
 
@@ -236,27 +250,39 @@ $Pr\Big[\sum_{S_j \in S} c_j*x'_j \geq k*d*log(n)*\sum_{S_j \in S} c_j*x^*_j\Big
 
 Obviously this is an event that we want to avoid and setting a big $k$ help us in that but, on the contrary, give us also a worse approximation factor than $d*log(n)$.
 
-We must choose $d$ and $k$ in a way that maximizes the probability that our solution is valid and the expected cost is in the bound and maximize the probability that this solution is minimal.
+We must choose $d$ and $k$ in a way that:
+
+\begin{itemize}
+    \item minimizes the probability that our solution is not valid ($\cup_{A_i \in A} C_i < 3$);
+    \item maximizes the probability that this solution is near to the optimal having the expected cost in a reasonable bound;
+\end{itemize}
 
 Choosing $d = 3$ we have an interesting result:
 
-$Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] = n*exp(-2*log(n)) = 1/n$
+\[
+Pr\Big[\bigcup_{A_i \in A} C_i < 3\Big] = n*\exp\big(-2*log(n)\big) = \frac{1}{n}
+\]
 
-The probability that all the skills are covered, so that $x'$ is feasible, is $1 - 1/n$ that is quite high and so we expect to need only a run to get a feasible solution.
+The probability that all the skills are covered, so that $x'$ is feasible, is $1 - \frac{1}{n}$ that is quite high and so we expect to need only few runs to get a feasible solution.
 
-The cost of this approximation must be at most $3*k*log(n)*LP$.
+The cost of this approximation is at most $3*k*log(n)*LP$.
 
-The probability that the solution is not feasible or that the cost exceed the bound is $Pr\Big[\E\big[\sum_{S_j \in S} c_j*x'_j\big] \geq \sum_{S_j \in S} k*d*log(n)*x^*_j \lor \bigcup_{A_i \in A} C_i < 3\Big] \leq \frac{1}{k} + \frac{1}{n}$.
+The probability that the solution is not feasible or that the cost exceed the bound is
 
-Setting $k = 2$ we get that the solution is feasible and with cost less than $6*log(n)*LP$ with probability greater than $\frac{1}{2} - \frac{1}{2*n}$ that is amost $\frac{1}{2}$ with a reasonable $n$.
-We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ and we choose $d$ and $k$ with the intention to have this a number of repetitions.
+\[
+Pr\Big[\sum_{S_j \in S} c_j*x'_j \geq \sum_{S_j \in S} 3*k*log(n)*x^*_j \cup \bigcup_{A_i \in A} C_i < 3\Big] \leq \frac{1}{k} + \frac{1}{n}
+\]
+
+Setting $k = 2$ we get that the solution is feasible and with cost less than $6*log(n)*LP$ with probability greater than $\frac{1}{2} - \frac{1}{n}$ that is amost $\frac{1}{2}$ with a reasonable $n$.
+
+We conclude that, as in the normal set cover approximation, the expected number of repetitions are $2$ to get a feasible solution with a cost less the $6*logn(n)$ times the cost of LP.
 
 \newpage
 \section{Exercise 3}
 
 We denote as $F^*$ the optimal solution of the problem. $F^*$ is the minimum cost set of edges that if removed creates $k$ connected components with each target terminal $s_i$ inside each component.
 
-Let $F_i^* \subset F^*$ the set of edges that if removed separated the vertex $s_i$ from the other $s_j$ with $i \ne j$. We have that $\mathlarger{\cup}_{i = 0}^k F_i^* = F^*$.
+Let $F_i^* \subset F^*$ the set of edges that if removed separates the vertex $s_i$ from the others $s_j$ with $i \ne j$. We have that $\mathlarger{\cup}_{i = 0}^k F_i^* = F^*$.
 
 Each edge $e$ in $F^*$ is contained in two $F_i^*$ because it is incident at two connected components. So we can say that:
 
