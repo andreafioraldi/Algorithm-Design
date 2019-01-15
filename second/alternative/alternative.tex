@@ -1,0 +1,265 @@
+% !TeX encoding = UTF-8
+% !TeX program = pdflatex
+
+%----------------------------------------------------------------------------------------
+%    PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}   % for \textcolor
+\usepackage{relsize}
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+%\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+%\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,amssymb} % Math packages
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\lstnewenvironment{pycode}[1][]{
+    \lstset{
+        language=python,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={self,as},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\lstnewenvironment{ccode}[1][]{
+    \lstset{
+        language=C,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0}\ttfamily,
+        keywordstyle=\color{blue}\ttfamily,
+        stringstyle=\color{red}\ttfamily,
+        commentstyle=\color{OliveGreen}\ttfamily,
+        morecomment=[l][\color{magenta}]{\#}
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        escapeinside={(*@}{@*)},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+\lstdefinelanguage{pseudocode}{
+    alsodigit = {-},
+    keywords = {algorithm,new,if,else,while,for,foreach,to,do,in,return,true,false,and,or,not,error,is,skip}
+}
+
+
+\lstnewenvironment{pseudo}[1][]{
+    \lstset{
+        language=pseudocode,
+        mathescape=true,
+        numbers=left,
+        stepnumber=1,
+        breaklines=true,
+        basicstyle=\linespread{1.0},
+        keywordstyle=\bfseries,
+        stringstyle=\color{red}\ttfamily,
+        columns=fullflexible,
+        otherkeywords={},
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        showstringspaces=false,
+    }
+    \lstdefinestyle{nonumbers}
+    {numbers=none}
+}{}
+
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\setcounter{secnumdepth}{0}
+
+\title{
+\normalfont \normalsize 
+\textsc{Sapienza University of Rome} \\ [25pt] % Your university, school and/or department name(s)
+\vspace*{60px}
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+Algorithm Design Second Homework \\
+\null
+\huge Alternative Solutions % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Andrea Fioraldi 1692419} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\newpage
+\section{Exercise 4}
+
+Let $k$ an ordered multiset of genes $g \in G$ such that $g_1 || ... || g_j || ... || g_{|k|} = D \text{ with } g_j \in k$ ($||$ is the concatenation operator). $K$ is the set of all possible $k$.
+
+As instance, if $D = ACCA$ we can have $K = \{\{AC,CA\},\{ACC,A\}\}$ if $G = \{AC,CA,ACC,A\}$.
+
+Let the variables $x_i$ with $i = 1 ... m$ binary variables that represents if a gene $G_i \in G$ is in $D$. 
+
+Let $y_k$ $\forall k \in K$ a binary variable that tells if the multiset $k$ is used to form $D$.
+
+The ILP formulation is the following:
+
+\[
+    \begin{array}{lll}
+    & min \mathlarger{\sum}_{i = 1}^m w_i*x_i & \\
+    (1) & \mathlarger{\sum}_{k \in K | G_i \in k} y_k - x_i \leq 0 & \forall i \in \{1 ... m\} \\
+    (2) & \mathlarger{\sum}_{k \in K} y_k \geq 1 & \\
+    & x_i \in \{0, 1\} & \forall i \in \{1 ... m\} \\
+    & y_k \in \{0, 1\} & \forall k \in K
+    \end{array}
+\]
+
+$(1)$ means that if a gene $G_i$ is not taken all the $k$ that contains $G_i$ mus be excluded. $(2)$ means that at least one $k$ must be taken, and it is our solution that has minimum cost genes.
+
+Consider now the LP-relaxion with $x_i \geq 0 \land y_k \geq 0$. Let's compute the dual of it.
+In the dual, we have that the number of variables is the same of the number of constraints in the primal ($m+1$) and vice-versa the number of constraints is the number of variables in the primal ($m+|K|$).
+Only constraint $(2)$ contribute to the objective function.
+
+When $G_i$ is used the index $i$ is always relative to $G$ and when we use $G_i \in k$ we are considering all the distinct genes in $k$.
+
+\[
+    \begin{array}{ll}
+    max\text{ }u & \\
+    \mathlarger{\sum}_{G_i \in k} v_i - u \geq 0 & \forall k \in K \\
+    v_i \leq w_i & \forall i \in \{1 ... m\}\\
+    u \geq 0, v_i \geq 0 & \forall i \in \{1 ... m\}
+    \end{array}
+\]
+
+\newpage
+\section{Exercise 5}
+
+The proposed problem is a finite zero-sum game theory problem.
+
+\begin{center}
+    \begin{tabular}{ | l | l | l | }
+        \hline
+        Comet, Dasher & Head & Tail \\ \hline
+        Head & 4, -4 & -1, 1 \\ \hline
+        Tail & -2, 2 & 2, -2 \\ \hline
+    \end{tabular}
+\end{center}
+
+We create a matrix $A_{2,2}$ associated to the previous table taking the first value of each table entry so that each entry of the matrix is the payoff for Comet and the cost for Dasher.
+We encode payoff/cost and mixed strategy as variables in a LP problem for each player:
+
+\[
+    \begin{array}{lll}
+    \text{Comet} & \text{  } & \text{Dasher} \\
+    max\text{ }y                & & min\text{ }v \\
+    4*x_1 - 2*x_2 \geq y    & & 4*u_1 - u_2 \leq v \\
+    -x_1 + 2*x_2 \geq y     & & -2*u_1 + 2*u_2 \leq v \\
+    x_1 + x_2 = 1               & & u_1 + u_2 = 1 \\
+    x_1 \geq 0, x_2 \geq 0      & & u_1 \geq 0, u_2 \geq 0 \\
+    \end{array}
+\]
+
+Comet wants to maximize the payoff choosing the mixed strategy $x$ in a way that no matter what Dhaser plays. Dasher wants to minimize the cost in the same way.
+Each problem is the dual of the other so $max\text{ }y = min\text{ }v = k$. This implies that this is a Mixed Nash Equilibrium with $k$ that is the value of the zero-sum game.
+
+Solving the two problems with a solver (see the \hyperref[ex5app]{Appendix} to know how) we have that $max\text{ }y = min\text{ }v = \frac{2}{3}$, $x_1 = \frac{4}{9}$, $x_2 = \frac{5}{9}$, $y_1 = \frac{1}{3}$, $x_2 = \frac{2}{3}$.
+Decoding the index of the variables to the strategies the result is that Santa will bias the coins with this probabilities:
+
+\[
+    \begin{array}{ll}
+    Pr[\text{Comet coin = Head}] = \frac{4}{9} & Pr[\text{Comet coin = Tail}] = \frac{5}{9} \\
+    Pr[\text{Dasher coin = Head}] = \frac{1}{3} & Pr[\text{Dasher coin = Tail}] = \frac{2}{3} \\
+    \end{array}
+\]
+
+\newpage
+\section*{Appendix}
+
+\subsection*{Exercise 5}
+\label{ex5app}
+
+Yes, AMPL+CPLEX should be used insted of Z3 but we do not like the AMPL syntax and in addition we use Z3 almost every day for SMT/SAT so...
+
+\bigskip
+Comet:
+\begin{verbatim}
+(declare-fun y () Real)
+(declare-fun x2 () Real)
+(declare-fun x1 () Real)
+(assert (>= (- (* 4.0 x1) (* 2.0 x2)) y))
+(assert (>= (+ (- x1) (* 2.0 x2)) y))
+(assert (= (+ x1 x2) 1.0))
+(assert (>= x1 0.0))
+(assert (>= x2 0.0))
+(maximize y)
+(check-sat)
+\end{verbatim}
+
+Dasher:
+\begin{verbatim}
+(declare-fun v () Real)
+(declare-fun y2 () Real)
+(declare-fun y1 () Real)
+(assert (<= (- (* 4.0 y1) y2) v))
+(assert (<= (+ (* (- 2.0) y1) (* 2.0 y2)) v))
+(assert (= (+ y1 y2) 1.0))
+(assert (>= y1 0.0))
+(assert (>= y2 0.0))
+(minimize v)
+(check-sat)
+\end{verbatim}
+
+\end{document}
