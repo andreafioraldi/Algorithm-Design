@@ -315,7 +315,7 @@ The ILP formulation is the following:
     & \min \mathlarger{\sum}_{k = 1}^m w_k*x_k & \text{s.t.}\\
     (1) & x_{k|G_k = sub(D,i,j)} - z_{i,j} \geq 0 & \forall (i,j) \in E\\
     (2) & \mathlarger{\sum}_{(i,j) \in \delta^+(0)} z_{i,j} = 1 & \\
-    (3) & \mathlarger{\sum}_{(i,j) \in \delta^-(v)} z_{i,j} - \mathlarger{\sum}_{(i,j) \in \delta^+(v)} z_{i,j} = 0 & \forall v \in V \setminus \{0,n\}\\
+    (3) & \mathlarger{\sum}_{(i,j) \in \delta^+(v)} z_{i,j} - \mathlarger{\sum}_{(i,j) \in \delta^-(v)} z_{i,j} = 0 & \forall v \in V \setminus \{0,n\}\\
     & x_k, z_{i,j} \in \{0,1\} & \\
     \end{array}
 \]
@@ -323,7 +323,7 @@ The ILP formulation is the following:
 $(1)$ is to force to consider a gene if a substring equal to the gene is taken. $(2)$ and $(3)$ are for the flow integrity.
 
 Consider now the LP-relaxion with $x_k, z_{i,j} \geq 0$. Let's compute the dual of it.
-We associate varibales and constraints as follows: $(1) \rightarrow q_{i,j}, (2) \rightarrow p_0, (3) \rightarrow p_v \text{ with } v \in V \setminus \{0,n\}, x_k \rightarrow (4), z_{i,j} \rightarrow (5)$.
+We associate varibales and constraints as follows: $(1) \rightarrow q_{i,j}, (2) \rightarrow p_0, (3) \rightarrow p_v \text{ with } v \in V \setminus \{0,n\}, x_k \rightarrow (4), z_{i,j} \rightarrow (5)$. We introduce also $p_n = 0$ as a facility in order to not separate $(5)$ in two cases.
 The $A$ matrix of the primal has dimension $(n+|E|)\times(m+|E|)$. Considering the fact that and edge $(i,j)$ can be only in a $\delta^-(v)$ and only in a $\delta^+(v)$ we can easily compute $A^T$.
 Only constraint $(2)$ contribute to the objective function and only $q$ is sign constrained (cfr. \cite{cap8roma}).
 
@@ -332,6 +332,7 @@ Only constraint $(2)$ contribute to the objective function and only $q$ is sign 
     & \max p_0 & \text{s.t.} \\
     (4) & \mathlarger{\sum}_{i,j | sub(D,i,j)=G_k} q_{i,j} \leq w_k & \forall k \in \{1,...,m\}\\
     (5) & -q_{i,j} +p_i -p_j \leq 0 & \forall (i,j) \in E\\
+    (6) & p_n = 0 & \\
     & q_{i,j} \geq 0 & \\
     \end{array}
 \]
